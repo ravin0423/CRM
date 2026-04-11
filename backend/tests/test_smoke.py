@@ -1,0 +1,12 @@
+"""Smoke tests that don't require a live database."""
+
+from fastapi.testclient import TestClient
+
+from app.main import app
+
+
+def test_health_endpoint():
+    client = TestClient(app)
+    r = client.get("/health")
+    assert r.status_code == 200
+    assert r.json()["status"] == "ok"

@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node / Frontend
+node_modules/
+dist/
+.vite/
+*.log
+.npm/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Secrets / local config (NEVER commit)
+.env
+.env.*
+!.env.example
+config/database_config.json
+config/admin_settings.json
+config/*.secret.json
+backend/config/*.local.json
+
+# Backups
+backups/
+*.bak
+*.sqlite
+*.db
+
+# MinIO local data
+minio-data/
+
+# Docker volumes
+postgres-data/
+mongo-data/
+redis-data/
+rabbitmq-data/
+
+# Build artifacts
+build/
+*.tar.gz
