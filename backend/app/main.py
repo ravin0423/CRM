@@ -16,13 +16,15 @@ turn reads the admin panel's settings file.
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.api.v1 import api_router
-from app.core.config_manager import ConfigManager
 from app.core.bootstrap import bootstrap_first_run
+from app.core.config_manager import ConfigManager
 from app.db.database_factory import DatabaseFactory
+from app.services.ticket_service import InvalidTicketTransition
 
 
 @asynccontextmanager
@@ -50,10 +52,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS is configured from admin settings at runtime, not hardcoded.
+# CORS: permissive in dev; tighten via Admin Panel → API tab in production.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # TODO: read from ConfigManager at startup
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -62,6 +64,25 @@ app.add_middleware(
 app.include_router(api_router, prefix="/api/v1")
 
 
+@app.exception_handler(InvalidTicketTransition)
+async def _invalid_transition_handler(_request: Request, exc: InvalidTicketTransition):
+    # The state machine is a business-rule violation, not a client payload
+    # error — Phase 1.5 will promote this to a 409 with a structured error
+    # code once we have an error-envelope contract agreed with the frontend.
+    return JSONResponse(status_code=500, content={"detail": str(exc)})
+
+
 @app.get("/health")
 async def health():
-    return {"status": "ok", "version": app.version}
+    db = getattr(app.state, "db", None)
+    db_ok = False
+    if db is not None:
+        try:
+            db_ok = await db.ping()
+        except Exception:
+            db_ok = False
+    return {
+        "status": "ok" if db_ok else "degraded",
+        "version": app.version,
+        "components": {"database": "up" if db_ok else "down"},
+    }

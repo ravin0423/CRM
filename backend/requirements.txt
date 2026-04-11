@@ -4,10 +4,13 @@ uvicorn[standard]==0.30.6
 pydantic==2.9.2
 pydantic-settings==2.5.2
 
-# Database - SQL Server
-sqlalchemy==2.0.35
+# Database - SQL Server (sync pyodbc + async aioodbc via SQLAlchemy)
+sqlalchemy[asyncio]==2.0.35
 pyodbc==5.1.0
+aioodbc==0.5.0
 alembic==1.13.3
+# Dev fallback: used by pytest when no SQL Server is available
+aiosqlite==0.20.0
 
 # Database - MongoDB
 motor==3.6.0
@@ -38,3 +41,8 @@ requests==2.32.3
 # Utilities
 python-dotenv==1.0.1
 structlog==24.4.0
+email-validator==2.2.0
+
+# Tests
+pytest==8.3.3
+pytest-asyncio==0.24.0
