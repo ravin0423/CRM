@@ -117,6 +117,18 @@ class _SQLUserRepo:
         async with self._sf() as s:
             return list((await s.execute(select(User).order_by(User.id))).scalars())
 
+    async def update(self, user_id: int, **data: Any) -> User | None:
+        async with self._sf() as s:
+            user = await s.get(User, user_id)
+            if user is None:
+                return None
+            for k, v in data.items():
+                if hasattr(user, k):
+                    setattr(user, k, v)
+            await s.commit()
+            await s.refresh(user)
+            return user
+
     async def set_password(self, user_id: int, new_password: str) -> None:
         async with self._sf() as s:
             user = await s.get(User, user_id)

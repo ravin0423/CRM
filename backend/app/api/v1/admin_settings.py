@@ -8,7 +8,11 @@ Every tab in the Admin Panel maps to one of these endpoints. There are no
 
 from __future__ import annotations
 
+import json
+import shutil
 from copy import deepcopy
+from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -94,6 +98,22 @@ async def test_email(payload: dict, user=Depends(require_admin)):
     except Exception as exc:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, f"SMTP test failed: {exc}") from exc
     return {"status": "ok"}
+
+
+@router.post("/backup/now")
+async def backup_now(user=Depends(require_admin)):
+    """Create a snapshot of admin_settings.json in the backups/ directory."""
+    from app.core.config_manager import DEFAULT_CONFIG_PATH
+
+    cfg_path = DEFAULT_CONFIG_PATH
+    if not cfg_path.exists():
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "No settings file to back up")
+    backup_dir = cfg_path.parent / "backups"
+    backup_dir.mkdir(parents=True, exist_ok=True)
+    ts = datetime.now(tz=timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    dest = backup_dir / f"admin_settings_{ts}.json"
+    shutil.copy2(cfg_path, dest)
+    return {"file": str(dest), "timestamp": ts}
 
 
 # --------------------------------------------------------------------------- #

@@ -89,6 +89,15 @@ class _MongoUserRepo:
     async def list(self) -> list[dict[str, Any]]:
         return [_to_dict(d) async for d in self._col.find().sort("_id", ASCENDING)]  # type: ignore[misc]
 
+    async def update(self, user_id: int, **data: Any) -> dict[str, Any] | None:
+        from bson import ObjectId
+
+        oid = ObjectId(str(user_id))
+        if not data:
+            return _to_dict(await self._col.find_one({"_id": oid}))
+        await self._col.update_one({"_id": oid}, {"$set": data})
+        return _to_dict(await self._col.find_one({"_id": oid}))
+
     async def set_password(self, user_id: int, new_password: str) -> None:
         from bson import ObjectId
 

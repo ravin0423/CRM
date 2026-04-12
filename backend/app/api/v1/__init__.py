@@ -12,12 +12,14 @@ from app.api.v1 import (
     freshdesk_import,
     knowledge,
     tickets,
+    users,
     workflows,
 )
 
 api_router = APIRouter()
 
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
+api_router.include_router(users.router, prefix="/users", tags=["users"])
 api_router.include_router(admin_settings.router, prefix="/admin/settings", tags=["admin"])
 api_router.include_router(tickets.router, prefix="/tickets", tags=["tickets"])
 api_router.include_router(contacts.router, prefix="/contacts", tags=["contacts"])

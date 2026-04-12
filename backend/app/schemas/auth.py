@@ -1,4 +1,6 @@
-from pydantic import BaseModel, EmailStr
+from typing import Literal
+
+from pydantic import BaseModel, EmailStr, Field
 
 
 class LoginRequest(BaseModel):
@@ -24,3 +26,20 @@ class UserOut(BaseModel):
     role: str
     status: str
     must_change_password: bool
+
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    name: str = Field(min_length=1, max_length=200)
+    password: str = Field(min_length=6, max_length=200)
+    role: Literal["admin", "agent", "viewer"] = "agent"
+
+
+class UserUpdate(BaseModel):
+    name: str | None = None
+    role: Literal["admin", "agent", "viewer"] | None = None
+    status: Literal["active", "inactive"] | None = None
+
+
+class ResetPasswordRequest(BaseModel):
+    new_password: str = Field(min_length=6, max_length=200)

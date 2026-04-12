@@ -4,6 +4,7 @@ import AdminPanel from "./pages/AdminPanel";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import ChatbotPage from "./pages/ChatbotPage";
 import ContactsPage from "./pages/ContactsPage";
+import FreshdeskImportPage from "./pages/FreshdeskImportPage";
 import KnowledgePage from "./pages/KnowledgePage";
 import LoginPage from "./pages/LoginPage";
 import TicketsPage from "./pages/TicketsPage";
@@ -101,6 +102,14 @@ export default function App() {
             element={
               <Protected>
                 <AnalyticsPage />
+              </Protected>
+            }
+          />
+          <Route
+            path="/freshdesk-import"
+            element={
+              <Protected>
+                <FreshdeskImportPage />
               </Protected>
             }
           />
