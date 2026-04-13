@@ -1,0 +1,80 @@
+{
+  "_comment": "Example of the structure written by the Admin Panel. DO NOT put real secrets in the example file. The actual file admin_settings.json is git-ignored and created at runtime.",
+  "version": 1,
+  "database": {
+    "type": "sqlserver",
+    "sqlserver": {
+      "server": "",
+      "port": 1433,
+      "database": "",
+      "username": "",
+      "password_encrypted": ""
+    },
+    "mongodb": {
+      "connection_string_encrypted": "",
+      "database": ""
+    }
+  },
+  "email": {
+    "smtp_host": "",
+    "smtp_port": 587,
+    "username": "",
+    "password_encrypted": "",
+    "from_email": "",
+    "from_name": ""
+  },
+  "storage": {
+    "type": "minio",
+    "minio": {
+      "endpoint": "http://localhost:9000",
+      "access_key": "",
+      "secret_key_encrypted": "",
+      "bucket": "crm-files"
+    },
+    "s3": {
+      "region": "us-east-1",
+      "access_key": "",
+      "secret_key_encrypted": "",
+      "bucket": ""
+    }
+  },
+  "api": {
+    "base_url": "http://localhost:8000/api/v1",
+    "timezone": "UTC",
+    "session_timeout_minutes": 30,
+    "max_upload_mb": 100,
+    "debug": false
+  },
+  "integrations": {
+    "freshdesk": {
+      "enabled": false,
+      "domain": "",
+      "api_key_encrypted": ""
+    },
+    "slack": {
+      "enabled": false,
+      "bot_token_encrypted": "",
+      "channel": "#support"
+    },
+    "calendar": {
+      "enabled": false,
+      "provider": "google",
+      "calendar_id": ""
+    }
+  },
+  "backup": {
+    "schedule_hours": 6,
+    "location": "local",
+    "retention_count": 10
+  },
+  "deployment": {
+    "environment": "local",
+    "aws": {
+      "region": "us-east-1",
+      "access_key": "",
+      "secret_key_encrypted": "",
+      "ec2_instance_type": "t3.medium",
+      "rds_instance_class": "db.t3.small"
+    }
+  }
+}
