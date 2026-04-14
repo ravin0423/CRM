@@ -40,7 +40,7 @@ async def test_ticket_crud_full_flow(app_client, auth_headers):
         json={"status": "closed"},
         headers=auth_headers,
     )
-    assert r.status_code == 500  # InvalidTicketTransition bubbles as 500 for now
+    assert r.status_code == 409  # InvalidTicketTransition → 409 Conflict
 
     # pending → resolved
     r = await app_client.patch(

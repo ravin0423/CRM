@@ -1,0 +1,35 @@
+# Local development overrides.
+# This file is automatically loaded by `docker compose up` alongside
+# docker-compose.yml. It mounts source code for hot-reload and uses
+# dev-mode settings. Do NOT use this file in production.
+
+services:
+  backend:
+    build: ./backend
+    command: >
+      uvicorn app.main:app
+      --host 0.0.0.0
+      --port 8000
+      --reload
+    environment:
+      CRM_ENV: development
+      CRM_LOG_LEVEL: DEBUG
+      CRM_CORS_ORIGINS: "*"
+    volumes:
+      - ./backend:/app
+      - ./config:/app/config
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    command: npm run dev
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      VITE_RUNTIME_CONFIG_URL: /config.json

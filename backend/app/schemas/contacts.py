@@ -36,6 +36,14 @@ class DealCreate(BaseModel):
     probability: int | None = None
 
 
+class DealUpdate(BaseModel):
+    name: str | None = None
+    amount: float | None = None
+    stage: str | None = None
+    probability: int | None = None
+    contact_id: int | None = None
+
+
 class DealOut(BaseModel):
     id: int
     contact_id: int

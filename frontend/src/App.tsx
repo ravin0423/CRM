@@ -8,6 +8,7 @@ import FreshdeskImportPage from "./pages/FreshdeskImportPage";
 import KnowledgePage from "./pages/KnowledgePage";
 import LoginPage from "./pages/LoginPage";
 import TicketsPage from "./pages/TicketsPage";
+import WorkflowsPage from "./pages/WorkflowsPage";
 import { useAuthStore } from "./store/auth";
 
 function Protected({ children }: { children: JSX.Element }) {
@@ -47,6 +48,9 @@ export default function App() {
         </Link>
         <Link className="block" to="/chatbot">
           Chatbot
+        </Link>
+        <Link className="block" to="/workflows">
+          Workflows
         </Link>
         <Link className="block" to="/analytics">
           Analytics
@@ -94,6 +98,14 @@ export default function App() {
             element={
               <Protected>
                 <ChatbotPage />
+              </Protected>
+            }
+          />
+          <Route
+            path="/workflows"
+            element={
+              <Protected>
+                <WorkflowsPage />
               </Protected>
             }
           />

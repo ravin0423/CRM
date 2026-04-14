@@ -53,6 +53,11 @@ services:
       - "6379:6379"
     volumes:
       - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
@@ -65,6 +70,11 @@ services:
       - "15672:15672"
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
 
   minio:
     image: minio/minio:latest
@@ -83,48 +93,61 @@ services:
     build: ./backend
     container_name: crm-backend
     depends_on:
-      - postgres
-      - redis
-      - rabbitmq
-      - minio
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     environment:
-      # Bootstrap values only — real values come from Admin Panel after first launch
       CRM_CONFIG_PATH: /app/config/admin_settings.json
       CRM_BOOTSTRAP_DB: postgres
       CRM_BOOTSTRAP_POSTGRES_URL: postgresql://crm:crm_change_me@postgres:5432/crm_meta
+      CRM_ENV: production
+      CRM_LOG_LEVEL: INFO
+      CRM_CORS_ORIGINS: http://localhost:3000,http://localhost
+      CRM_CELERY_BROKER: amqp://crm:crm_change_me@rabbitmq:5672//
+      CRM_CELERY_BACKEND: redis://redis:6379/0
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/app
       - ./config:/app/config
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
   worker:
     build: ./backend
     container_name: crm-worker
-    command: celery -A app.workers.celery_app worker --loglevel=info
+    command: celery -A app.workers.celery_app worker --loglevel=info --concurrency=2
     depends_on:
-      - backend
-      - rabbitmq
-      - redis
+      backend:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       CRM_CONFIG_PATH: /app/config/admin_settings.json
+      CRM_CELERY_BROKER: amqp://crm:crm_change_me@rabbitmq:5672//
+      CRM_CELERY_BACKEND: redis://redis:6379/0
     volumes:
-      - ./backend:/app
       - ./config:/app/config
+    restart: unless-stopped
 
   frontend:
     build: ./frontend
     container_name: crm-frontend
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     ports:
-      - "3000:3000"
-    environment:
-      # The frontend reads its API base URL at runtime from /config.json,
-      # which is written by the backend based on Admin Panel settings.
-      VITE_RUNTIME_CONFIG_URL: /config.json
-    volumes:
-      - ./frontend:/app
+      - "80:80"
+    restart: unless-stopped
 
 volumes:
   postgres-data:

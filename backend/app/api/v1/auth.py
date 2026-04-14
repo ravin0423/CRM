@@ -1,12 +1,13 @@
 """Authentication endpoints — JWT login, change password, /me."""
 
-from __future__ import annotations
+from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from app.core.deps import get_current_user, get_db
 from app.core.security import create_access_token, verify_password
 from app.db.database_interface import DatabaseInterface
+from app.middleware.rate_limit import limiter
 from app.schemas.auth import (
     ChangePasswordRequest,
     LoginRequest,
@@ -35,7 +36,8 @@ def _to_user_out(user) -> UserOut:
 
 
 @router.post("/login", response_model=TokenResponse)
-async def login(payload: LoginRequest, db: DatabaseInterface = Depends(get_db)):
+@limiter.limit("10/minute")
+async def login(request: Request, payload: LoginRequest, db: DatabaseInterface = Depends(get_db)):
     user = await db.users.by_email(payload.email)
     if user is None or not verify_password(payload.password, _user_field(user, "password_hash") or ""):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid email or password")

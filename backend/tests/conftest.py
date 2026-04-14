@@ -21,6 +21,7 @@ import pytest_asyncio
 _tmp = Path(tempfile.mkdtemp(prefix="crm-tests-"))
 os.environ["CRM_CONFIG_PATH"] = str(_tmp / "admin_settings.json")
 os.environ["CRM_MASTER_KEY_B64"] = "yDI3ENBgC3blcjhmqN2YEqP0l7dCGwyO3EDFqRBBxQQ="  # fixed test key
+os.environ["CRM_RATE_LIMIT_ENABLED"] = "false"  # disable rate limiting in tests
 # Force SQLite fallback by leaving SQL Server creds empty.
 
 
