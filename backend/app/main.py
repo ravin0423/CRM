@@ -14,22 +14,40 @@ source code. Every value comes from :mod:`app.core.config_manager`, which in
 turn reads the admin panel's settings file.
 """
 
+from __future__ import annotations
+
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 from app.api.v1 import api_router
 from app.core.bootstrap import bootstrap_first_run
 from app.core.config_manager import ConfigManager
+from app.core.logging import get_logger, setup_logging
 from app.db.database_factory import DatabaseFactory
+from app.middleware.error_handler import ErrorHandlerMiddleware
+from app.middleware.rate_limit import limiter
+from app.middleware.security_headers import SecurityHeadersMiddleware
 from app.services.ticket_service import InvalidTicketTransition
+
+# Initialise structured logging early
+_env = os.getenv("CRM_ENV", "production")
+setup_logging(
+    log_level=os.getenv("CRM_LOG_LEVEL", "INFO"),
+    json_output=(_env != "development"),
+)
+logger = get_logger("crm.main")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # --- STARTUP ---
+    logger.info("startup", env=_env)
     config = ConfigManager.load()
     app.state.config = config
 
@@ -39,37 +57,49 @@ async def lifespan(app: FastAPI):
     app.state.db = db
 
     await bootstrap_first_run(db, config)
+    logger.info("startup_complete")
 
     yield
 
     # --- SHUTDOWN ---
+    logger.info("shutdown")
     await db.disconnect()
 
 
 app = FastAPI(
     title="Internal Support CRM",
-    version="1.0.0-dev",
+    version="1.0.0",
     lifespan=lifespan,
 )
 
-# CORS: permissive in dev; tighten via Admin Panel → API tab in production.
+# --- Middleware (order matters: outermost first) ---
+
+# 1. Global error handler — catches unhandled exceptions
+app.add_middleware(ErrorHandlerMiddleware)
+
+# 2. Security headers on every response
+app.add_middleware(SecurityHeadersMiddleware)
+
+# 3. CORS — read allowed origins from config, default permissive in dev
+_cors_origins = os.getenv("CRM_CORS_ORIGINS", "*").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# 4. Rate limiting
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.include_router(api_router, prefix="/api/v1")
 
 
 @app.exception_handler(InvalidTicketTransition)
 async def _invalid_transition_handler(_request: Request, exc: InvalidTicketTransition):
-    # The state machine is a business-rule violation, not a client payload
-    # error — Phase 1.5 will promote this to a 409 with a structured error
-    # code once we have an error-envelope contract agreed with the frontend.
-    return JSONResponse(status_code=500, content={"detail": str(exc)})
+    return JSONResponse(status_code=409, content={"detail": str(exc)})
 
 
 @app.get("/health")

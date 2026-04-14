@@ -38,6 +38,9 @@ jinja2==3.1.4
 httpx==0.27.2
 requests==2.32.3
 
+# Rate limiting
+slowapi==0.1.9
+
 # Utilities
 python-dotenv==1.0.1
 structlog==24.4.0

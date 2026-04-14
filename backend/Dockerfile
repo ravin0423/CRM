@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.11-slim AS base
 
 # System deps for pyodbc (SQL Server driver) and native builds
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -18,4 +18,10 @@ COPY . .
 
 EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Production: no --reload, 4 workers, graceful shutdown
+CMD ["uvicorn", "app.main:app", \
+     "--host", "0.0.0.0", \
+     "--port", "8000", \
+     "--workers", "4", \
+     "--access-log", \
+     "--timeout-keep-alive", "30"]
