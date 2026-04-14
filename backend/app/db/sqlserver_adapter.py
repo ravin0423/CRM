@@ -28,11 +28,14 @@ from app.db.database_interface import DatabaseInterface
 from app.db.models import (
     AuditLog,
     Base,
+    ChatConversation,
     Contact,
     Deal,
+    KnowledgeArticle,
     Ticket,
     TicketComment,
     User,
+    Workflow,
 )
 
 
@@ -305,6 +308,170 @@ class _SQLAuditRepo:
             return list((await s.execute(stmt)).scalars())
 
 
+class _SQLKnowledgeRepo:
+    def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
+        self._sf = session_factory
+
+    async def list(self, **filters: Any) -> list[KnowledgeArticle]:
+        async with self._sf() as s:
+            stmt = select(KnowledgeArticle).order_by(KnowledgeArticle.created_at.desc())
+            if (status := filters.get("status")):
+                stmt = stmt.where(KnowledgeArticle.status == status)
+            return list((await s.execute(stmt)).scalars())
+
+    async def get(self, article_id: int) -> KnowledgeArticle | None:
+        async with self._sf() as s:
+            return await s.get(KnowledgeArticle, article_id)
+
+    async def by_slug(self, slug: str) -> KnowledgeArticle | None:
+        async with self._sf() as s:
+            return (
+                await s.execute(
+                    select(KnowledgeArticle).where(KnowledgeArticle.slug == slug)
+                )
+            ).scalar_one_or_none()
+
+    async def create(self, **data: Any) -> KnowledgeArticle:
+        async with self._sf() as s:
+            article = KnowledgeArticle(**data)
+            s.add(article)
+            await s.commit()
+            await s.refresh(article)
+            return article
+
+    async def update(self, article_id: int, **data: Any) -> KnowledgeArticle | None:
+        async with self._sf() as s:
+            a = await s.get(KnowledgeArticle, article_id)
+            if a is None:
+                return None
+            for k, v in data.items():
+                if hasattr(a, k):
+                    setattr(a, k, v)
+            await s.commit()
+            await s.refresh(a)
+            return a
+
+    async def delete(self, article_id: int) -> None:
+        async with self._sf() as s:
+            a = await s.get(KnowledgeArticle, article_id)
+            if a is not None:
+                await s.delete(a)
+                await s.commit()
+
+    async def search(self, query: str) -> list[KnowledgeArticle]:
+        async with self._sf() as s:
+            pattern = f"%{query}%"
+            stmt = (
+                select(KnowledgeArticle)
+                .where(
+                    (KnowledgeArticle.title.ilike(pattern))
+                    | (KnowledgeArticle.content.ilike(pattern))
+                )
+                .where(KnowledgeArticle.status == "published")
+                .order_by(KnowledgeArticle.views_count.desc())
+                .limit(20)
+            )
+            return list((await s.execute(stmt)).scalars())
+
+    async def increment_views(self, article_id: int) -> None:
+        async with self._sf() as s:
+            a = await s.get(KnowledgeArticle, article_id)
+            if a is not None:
+                a.views_count = (a.views_count or 0) + 1
+                await s.commit()
+
+
+class _SQLWorkflowRepo:
+    def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
+        self._sf = session_factory
+
+    async def list(self) -> list[Workflow]:
+        async with self._sf() as s:
+            return list((await s.execute(select(Workflow).order_by(Workflow.id))).scalars())
+
+    async def get(self, workflow_id: int) -> Workflow | None:
+        async with self._sf() as s:
+            return await s.get(Workflow, workflow_id)
+
+    async def create(self, **data: Any) -> Workflow:
+        async with self._sf() as s:
+            w = Workflow(**data)
+            s.add(w)
+            await s.commit()
+            await s.refresh(w)
+            return w
+
+    async def update(self, workflow_id: int, **data: Any) -> Workflow | None:
+        async with self._sf() as s:
+            w = await s.get(Workflow, workflow_id)
+            if w is None:
+                return None
+            for k, v in data.items():
+                if hasattr(w, k):
+                    setattr(w, k, v)
+            await s.commit()
+            await s.refresh(w)
+            return w
+
+    async def delete(self, workflow_id: int) -> None:
+        async with self._sf() as s:
+            w = await s.get(Workflow, workflow_id)
+            if w is not None:
+                await s.delete(w)
+                await s.commit()
+
+    async def list_enabled(self) -> list[Workflow]:
+        async with self._sf() as s:
+            stmt = select(Workflow).where(Workflow.enabled == True).order_by(Workflow.id)  # noqa: E712
+            return list((await s.execute(stmt)).scalars())
+
+
+class _SQLChatRepo:
+    def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
+        self._sf = session_factory
+
+    async def create(self, **data: Any) -> ChatConversation:
+        async with self._sf() as s:
+            data.setdefault("messages", [])
+            c = ChatConversation(**data)
+            s.add(c)
+            await s.commit()
+            await s.refresh(c)
+            return c
+
+    async def get(self, conversation_id: int) -> ChatConversation | None:
+        async with self._sf() as s:
+            return await s.get(ChatConversation, conversation_id)
+
+    async def list(self, **filters: Any) -> list[ChatConversation]:
+        async with self._sf() as s:
+            stmt = select(ChatConversation).order_by(ChatConversation.created_at.desc())
+            if (user_id := filters.get("user_id")) is not None:
+                stmt = stmt.where(ChatConversation.user_id == user_id)
+            if filters.get("resolved") is not None:
+                stmt = stmt.where(ChatConversation.resolved == filters["resolved"])
+            return list((await s.execute(stmt)).scalars())
+
+    async def append_message(self, conversation_id: int, message: dict[str, Any]) -> ChatConversation | None:
+        async with self._sf() as s:
+            c = await s.get(ChatConversation, conversation_id)
+            if c is None:
+                return None
+            msgs = list(c.messages) if c.messages else []
+            msgs.append(message)
+            c.messages = msgs
+            await s.commit()
+            await s.refresh(c)
+            return c
+
+    async def resolve(self, conversation_id: int) -> None:
+        async with self._sf() as s:
+            c = await s.get(ChatConversation, conversation_id)
+            if c is not None:
+                c.resolved = True
+                await s.commit()
+
+
 # --------------------------------------------------------------------------- #
 # Adapter
 # --------------------------------------------------------------------------- #
@@ -327,6 +494,9 @@ class SQLServerDatabase(DatabaseInterface):
         self.contacts = None  # type: ignore[assignment]
         self.deals = None  # type: ignore[assignment]
         self.audit = None  # type: ignore[assignment]
+        self.knowledge = None  # type: ignore[assignment]
+        self.workflows = None  # type: ignore[assignment]
+        self.chat = None  # type: ignore[assignment]
 
     # -- lifecycle -------------------------------------------------------- #
     async def connect(self) -> None:
@@ -341,6 +511,9 @@ class SQLServerDatabase(DatabaseInterface):
         self.contacts = _SQLContactRepo(sf)  # type: ignore[assignment]
         self.deals = _SQLDealRepo(sf)  # type: ignore[assignment]
         self.audit = _SQLAuditRepo(sf)  # type: ignore[assignment]
+        self.knowledge = _SQLKnowledgeRepo(sf)  # type: ignore[assignment]
+        self.workflows = _SQLWorkflowRepo(sf)  # type: ignore[assignment]
+        self.chat = _SQLChatRepo(sf)  # type: ignore[assignment]
 
     async def disconnect(self) -> None:
         if self._engine is not None:

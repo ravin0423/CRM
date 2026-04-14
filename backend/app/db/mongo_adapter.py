@@ -231,6 +231,121 @@ class _MongoAuditRepo:
         return [_to_dict(d) async for d in self._col.find().sort("_id", DESCENDING).limit(limit)]  # type: ignore[misc]
 
 
+class _MongoKnowledgeRepo:
+    def __init__(self, db: AsyncIOMotorDatabase) -> None:
+        self._col = db["knowledge_articles"]
+
+    async def list(self, **filters: Any) -> list[dict[str, Any]]:
+        query = {k: v for k, v in filters.items() if v is not None}
+        return [_to_dict(d) async for d in self._col.find(query).sort("created_at", DESCENDING)]  # type: ignore[misc]
+
+    async def get(self, article_id: int) -> dict[str, Any] | None:
+        from bson import ObjectId
+        return _to_dict(await self._col.find_one({"_id": ObjectId(str(article_id))}))
+
+    async def by_slug(self, slug: str) -> dict[str, Any] | None:
+        return _to_dict(await self._col.find_one({"slug": slug}))
+
+    async def create(self, **data: Any) -> dict[str, Any]:
+        data.setdefault("status", "draft")
+        data.setdefault("views_count", 0)
+        data["created_at"] = _utcnow()
+        res = await self._col.insert_one(data)
+        data["_id"] = res.inserted_id
+        return _to_dict(data)  # type: ignore[return-value]
+
+    async def update(self, article_id: int, **data: Any) -> dict[str, Any] | None:
+        from bson import ObjectId
+        await self._col.update_one({"_id": ObjectId(str(article_id))}, {"$set": data})
+        return await self.get(article_id)
+
+    async def delete(self, article_id: int) -> None:
+        from bson import ObjectId
+        await self._col.delete_one({"_id": ObjectId(str(article_id))})
+
+    async def search(self, query: str) -> list[dict[str, Any]]:
+        import re
+        pattern = re.compile(re.escape(query), re.IGNORECASE)
+        cursor = self._col.find(
+            {"status": "published", "$or": [{"title": pattern}, {"content": pattern}]}
+        ).sort("views_count", DESCENDING).limit(20)
+        return [_to_dict(d) async for d in cursor]  # type: ignore[misc]
+
+    async def increment_views(self, article_id: int) -> None:
+        from bson import ObjectId
+        await self._col.update_one(
+            {"_id": ObjectId(str(article_id))},
+            {"$inc": {"views_count": 1}},
+        )
+
+
+class _MongoWorkflowRepo:
+    def __init__(self, db: AsyncIOMotorDatabase) -> None:
+        self._col = db["workflows"]
+
+    async def list(self) -> list[dict[str, Any]]:
+        return [_to_dict(d) async for d in self._col.find().sort("_id", ASCENDING)]  # type: ignore[misc]
+
+    async def get(self, workflow_id: int) -> dict[str, Any] | None:
+        from bson import ObjectId
+        return _to_dict(await self._col.find_one({"_id": ObjectId(str(workflow_id))}))
+
+    async def create(self, **data: Any) -> dict[str, Any]:
+        data.setdefault("enabled", True)
+        data["created_at"] = _utcnow()
+        res = await self._col.insert_one(data)
+        data["_id"] = res.inserted_id
+        return _to_dict(data)  # type: ignore[return-value]
+
+    async def update(self, workflow_id: int, **data: Any) -> dict[str, Any] | None:
+        from bson import ObjectId
+        await self._col.update_one({"_id": ObjectId(str(workflow_id))}, {"$set": data})
+        return await self.get(workflow_id)
+
+    async def delete(self, workflow_id: int) -> None:
+        from bson import ObjectId
+        await self._col.delete_one({"_id": ObjectId(str(workflow_id))})
+
+    async def list_enabled(self) -> list[dict[str, Any]]:
+        return [_to_dict(d) async for d in self._col.find({"enabled": True}).sort("_id", ASCENDING)]  # type: ignore[misc]
+
+
+class _MongoChatRepo:
+    def __init__(self, db: AsyncIOMotorDatabase) -> None:
+        self._col = db["chat_conversations"]
+
+    async def create(self, **data: Any) -> dict[str, Any]:
+        data.setdefault("messages", [])
+        data.setdefault("resolved", False)
+        data["created_at"] = _utcnow()
+        res = await self._col.insert_one(data)
+        data["_id"] = res.inserted_id
+        return _to_dict(data)  # type: ignore[return-value]
+
+    async def get(self, conversation_id: int) -> dict[str, Any] | None:
+        from bson import ObjectId
+        return _to_dict(await self._col.find_one({"_id": ObjectId(str(conversation_id))}))
+
+    async def list(self, **filters: Any) -> list[dict[str, Any]]:
+        query = {k: v for k, v in filters.items() if v is not None}
+        return [_to_dict(d) async for d in self._col.find(query).sort("created_at", DESCENDING)]  # type: ignore[misc]
+
+    async def append_message(self, conversation_id: int, message: dict[str, Any]) -> dict[str, Any] | None:
+        from bson import ObjectId
+        await self._col.update_one(
+            {"_id": ObjectId(str(conversation_id))},
+            {"$push": {"messages": message}},
+        )
+        return await self.get(conversation_id)
+
+    async def resolve(self, conversation_id: int) -> None:
+        from bson import ObjectId
+        await self._col.update_one(
+            {"_id": ObjectId(str(conversation_id))},
+            {"$set": {"resolved": True}},
+        )
+
+
 # --------------------------------------------------------------------------- #
 # Adapter
 # --------------------------------------------------------------------------- #
@@ -244,6 +359,9 @@ class MongoDatabase(DatabaseInterface):
         self.contacts = None  # type: ignore[assignment]
         self.deals = None  # type: ignore[assignment]
         self.audit = None  # type: ignore[assignment]
+        self.knowledge = None  # type: ignore[assignment]
+        self.workflows = None  # type: ignore[assignment]
+        self.chat = None  # type: ignore[assignment]
 
     async def connect(self) -> None:
         conn_enc = self.cfg.get("connection_string_encrypted") or ""
@@ -261,6 +379,9 @@ class MongoDatabase(DatabaseInterface):
         self.contacts = _MongoContactRepo(db)  # type: ignore[assignment]
         self.deals = _MongoDealRepo(db)  # type: ignore[assignment]
         self.audit = _MongoAuditRepo(db)  # type: ignore[assignment]
+        self.knowledge = _MongoKnowledgeRepo(db)  # type: ignore[assignment]
+        self.workflows = _MongoWorkflowRepo(db)  # type: ignore[assignment]
+        self.chat = _MongoChatRepo(db)  # type: ignore[assignment]
 
     async def disconnect(self) -> None:
         if self._client is not None:

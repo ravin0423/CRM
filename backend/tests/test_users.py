@@ -1,4 +1,10 @@
+import uuid
+
 import pytest
+
+
+def _email(prefix: str = "user") -> str:
+    return f"{prefix}-{uuid.uuid4().hex[:8]}@test.com"
 
 
 @pytest.mark.asyncio
@@ -22,10 +28,11 @@ async def test_list_users_requires_admin(app_client):
 
 @pytest.mark.asyncio
 async def test_create_user(app_client, auth_headers):
+    email = _email("agent1")
     r = await app_client.post(
         "/api/v1/users",
         json={
-            "email": "agent1@company.com",
+            "email": email,
             "name": "Agent One",
             "password": "secure123",
             "role": "agent",
@@ -34,7 +41,7 @@ async def test_create_user(app_client, auth_headers):
     )
     assert r.status_code == 201, r.text
     user = r.json()
-    assert user["email"] == "agent1@company.com"
+    assert user["email"] == email
     assert user["role"] == "agent"
     assert user["status"] == "active"
     assert "password_hash" not in user
@@ -42,22 +49,15 @@ async def test_create_user(app_client, auth_headers):
 
 @pytest.mark.asyncio
 async def test_create_duplicate_email(app_client, auth_headers):
+    email = _email("dup")
     await app_client.post(
         "/api/v1/users",
-        json={
-            "email": "dup@company.com",
-            "name": "Dup",
-            "password": "secure123",
-        },
+        json={"email": email, "name": "Dup", "password": "secure123"},
         headers=auth_headers,
     )
     r = await app_client.post(
         "/api/v1/users",
-        json={
-            "email": "dup@company.com",
-            "name": "Dup Again",
-            "password": "secure123",
-        },
+        json={"email": email, "name": "Dup Again", "password": "secure123"},
         headers=auth_headers,
     )
     assert r.status_code == 409
@@ -68,7 +68,7 @@ async def test_update_user_role(app_client, auth_headers):
     r = await app_client.post(
         "/api/v1/users",
         json={
-            "email": "tobeviewer@company.com",
+            "email": _email("tobeviewer"),
             "name": "Future Viewer",
             "password": "secure123",
             "role": "agent",
@@ -91,7 +91,7 @@ async def test_deactivate_user(app_client, auth_headers):
     r = await app_client.post(
         "/api/v1/users",
         json={
-            "email": "deactivate-me@company.com",
+            "email": _email("deactivate"),
             "name": "Bye",
             "password": "secure123",
         },
@@ -124,10 +124,11 @@ async def test_cannot_change_own_role(app_client, auth_headers):
 
 @pytest.mark.asyncio
 async def test_reset_password(app_client, auth_headers):
+    email = _email("resetme")
     r = await app_client.post(
         "/api/v1/users",
         json={
-            "email": "resetme@company.com",
+            "email": email,
             "name": "Reset Me",
             "password": "oldpass123",
         },
@@ -146,6 +147,6 @@ async def test_reset_password(app_client, auth_headers):
     # Verify the new password works
     r = await app_client.post(
         "/api/v1/auth/login",
-        json={"email": "resetme@company.com", "password": "newpass456"},
+        json={"email": email, "password": "newpass456"},
     )
     assert r.status_code == 200
