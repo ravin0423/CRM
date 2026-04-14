@@ -205,11 +205,21 @@ class _MongoDealRepo:
         data["_id"] = res.inserted_id
         return _to_dict(data)  # type: ignore[return-value]
 
+    async def get(self, deal_id: int) -> dict[str, Any] | None:
+        from bson import ObjectId
+
+        return _to_dict(await self._col.find_one({"_id": ObjectId(str(deal_id))}))
+
     async def update(self, deal_id: int, **data: Any) -> dict[str, Any] | None:
         from bson import ObjectId
 
         await self._col.update_one({"_id": ObjectId(str(deal_id))}, {"$set": data})
         return _to_dict(await self._col.find_one({"_id": ObjectId(str(deal_id))}))
+
+    async def delete(self, deal_id: int) -> None:
+        from bson import ObjectId
+
+        await self._col.delete_one({"_id": ObjectId(str(deal_id))})
 
 
 class _MongoAuditRepo:

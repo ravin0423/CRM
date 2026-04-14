@@ -258,6 +258,10 @@ class _SQLDealRepo:
                 stmt = stmt.where(Deal.stage == stage)
             return list((await s.execute(stmt)).scalars())
 
+    async def get(self, deal_id: int) -> Deal | None:
+        async with self._sf() as s:
+            return await s.get(Deal, deal_id)
+
     async def create(self, **data: Any) -> Deal:
         async with self._sf() as s:
             d = Deal(**data)
@@ -277,6 +281,13 @@ class _SQLDealRepo:
             await s.commit()
             await s.refresh(d)
             return d
+
+    async def delete(self, deal_id: int) -> None:
+        async with self._sf() as s:
+            d = await s.get(Deal, deal_id)
+            if d is not None:
+                await s.delete(d)
+                await s.commit()
 
 
 class _SQLAuditRepo:
@@ -500,8 +511,28 @@ class SQLServerDatabase(DatabaseInterface):
 
     # -- lifecycle -------------------------------------------------------- #
     async def connect(self) -> None:
-        url = _build_sqlserver_url(self.cfg) or "sqlite+aiosqlite:///./config/crm-dev.sqlite"
-        self._engine = create_async_engine(url, pool_pre_ping=True, future=True)
+        import logging
+
+        url = _build_sqlserver_url(self.cfg)
+        if url:
+            # Production: SQL Server with connection pool tuning
+            self._engine = create_async_engine(
+                url,
+                pool_pre_ping=True,
+                pool_size=10,
+                max_overflow=20,
+                pool_recycle=1800,
+                future=True,
+            )
+        else:
+            # Fallback: in-process SQLite for dev/setup
+            logging.getLogger("crm.db").warning(
+                "No SQL Server credentials configured — using SQLite fallback. "
+                "This is NOT suitable for production. Configure database "
+                "credentials via the Admin Panel."
+            )
+            url = "sqlite+aiosqlite:///./config/crm-dev.sqlite"
+            self._engine = create_async_engine(url, pool_pre_ping=True, future=True)
         self._session_factory = async_sessionmaker(
             self._engine, expire_on_commit=False, class_=AsyncSession
         )
