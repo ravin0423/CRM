@@ -1,32 +1,48 @@
 #!/usr/bin/env bash
 # =============================================================
-#  Internal Support CRM — One-Command Deployment Script
-#  Works on: Ubuntu 20.04+, Debian 11+, CentOS 8+, Amazon Linux 2
+#  Internal Support CRM — Automated Deployment Script
+#  Tested on: Ubuntu 20.04+, Debian 11+, CentOS 8+, Amazon Linux 2
 #
-#  Usage:  curl -sL <your-repo>/deploy.sh | bash
-#     or:  chmod +x deploy.sh && ./deploy.sh
+#  ONE-COMMAND INSTALL:
+#    sudo bash deploy.sh
+#
+#  This script handles EVERYTHING:
+#    1. System package updates
+#    2. Docker + Docker Compose installation
+#    3. Git installation + repo clone
+#    4. Secure secret generation
+#    5. Configuration files
+#    6. Container build + launch
+#    7. Health verification
+#    8. Firewall rules
 # =============================================================
 
 set -euo pipefail
 
-# ---- Colours for output ----
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+# ── Colours ──
+RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
+BLUE='\033[0;34m'; CYAN='\033[0;36m'; BOLD='\033[1m'; NC='\033[0m'
 
-print_step()  { echo -e "\n${BLUE}[STEP]${NC}  $1"; }
-print_ok()    { echo -e "${GREEN}[OK]${NC}    $1"; }
-print_warn()  { echo -e "${YELLOW}[WARN]${NC}  $1"; }
-print_error() { echo -e "${RED}[ERROR]${NC} $1"; }
+step()  { echo -e "\n${CYAN}${BOLD}[$1/${TOTAL_STEPS}]${NC} ${BLUE}$2${NC}"; }
+ok()    { echo -e "  ${GREEN}✓${NC} $1"; }
+warn()  { echo -e "  ${YELLOW}!${NC} $1"; }
+fail()  { echo -e "  ${RED}✗${NC} $1"; }
 
-# ---- Pre-flight checks ----
-print_step "Checking system requirements..."
+TOTAL_STEPS=8
+APP_DIR="/opt/crm"
+REPO_URL="https://github.com/ravin0423/CRM.git"
+BRANCH="main"
+
+# ──────────────────────────────────────────────────
+# Pre-flight
+# ──────────────────────────────────────────────────
+echo -e "\n${BOLD}${CYAN}╔══════════════════════════════════════════════╗${NC}"
+echo -e "${BOLD}${CYAN}║     Internal Support CRM — Auto Deploy       ║${NC}"
+echo -e "${BOLD}${CYAN}╚══════════════════════════════════════════════╝${NC}"
+echo ""
 
 if [ "$(id -u)" -ne 0 ]; then
-    print_error "This script must be run as root (or with sudo)"
-    echo "  Run:  sudo bash deploy.sh"
+    fail "This script must be run as root (sudo bash deploy.sh)"
     exit 1
 fi
 
@@ -34,224 +50,251 @@ fi
 if [ -f /etc/os-release ]; then
     . /etc/os-release
     OS=$ID
+    OS_VERSION=${VERSION_ID:-""}
 else
     OS="unknown"
+    OS_VERSION=""
 fi
-print_ok "Detected OS: $OS"
+ok "Detected OS: $OS $OS_VERSION"
 
-# ============================================================
-# STEP 1: Install Docker + Docker Compose
-# ============================================================
-print_step "Installing Docker and Docker Compose..."
+# Detect architecture
+ARCH=$(uname -m)
+ok "Architecture: $ARCH"
 
-if command -v docker &> /dev/null; then
-    print_ok "Docker already installed: $(docker --version)"
-else
-    print_step "Installing Docker..."
+# ──────────────────────────────────────────────────
+# STEP 1: System updates and prerequisites
+# ──────────────────────────────────────────────────
+step 1 "Installing system prerequisites..."
+
+install_pkg() {
     case "$OS" in
         ubuntu|debian)
-            apt-get update -qq
-            apt-get install -y -qq ca-certificates curl gnupg lsb-release
-            install -m 0755 -d /etc/apt/keyrings
-            curl -fsSL https://download.docker.com/linux/$OS/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg 2>/dev/null
-            chmod a+r /etc/apt/keyrings/docker.gpg
-            echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/$OS $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list
-            apt-get update -qq
-            apt-get install -y -qq docker-ce docker-ce-cli containerd.io docker-compose-plugin
+            export DEBIAN_FRONTEND=noninteractive
+            apt-get update -qq 2>/dev/null
+            apt-get install -y -qq "$@" 2>/dev/null
             ;;
-        centos|rhel|rocky|almalinux|fedora)
-            dnf install -y -q dnf-plugins-core
-            dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-            dnf install -y -q docker-ce docker-ce-cli containerd.io docker-compose-plugin
+        centos|rhel|rocky|almalinux)
+            dnf install -y -q "$@" 2>/dev/null || yum install -y -q "$@" 2>/dev/null
             ;;
         amzn)
-            yum install -y -q docker
-            systemctl start docker
-            # Install compose plugin
-            mkdir -p /usr/local/lib/docker/cli-plugins
-            curl -fsSL "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/lib/docker/cli-plugins/docker-compose
-            chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+            yum install -y -q "$@" 2>/dev/null
+            ;;
+        fedora)
+            dnf install -y -q "$@" 2>/dev/null
             ;;
         *)
-            print_error "Unsupported OS: $OS. Install Docker manually, then re-run."
+            fail "Unsupported OS: $OS. Install Docker manually, then re-run."
             exit 1
             ;;
     esac
-    systemctl enable docker
-    systemctl start docker
-    print_ok "Docker installed successfully"
-fi
+}
 
-# Verify docker compose works
-if docker compose version &> /dev/null; then
-    print_ok "Docker Compose: $(docker compose version --short)"
-elif docker-compose version &> /dev/null; then
-    # Older standalone docker-compose
-    print_ok "Docker Compose (standalone): $(docker-compose version --short)"
-    # Create wrapper so rest of script can use `docker compose`
-    echo '#!/bin/sh' > /usr/local/bin/docker-compose-wrapper
-    echo 'docker-compose "$@"' >> /usr/local/bin/docker-compose-wrapper
-    chmod +x /usr/local/bin/docker-compose-wrapper
+# Essential packages
+install_pkg curl git ca-certificates gnupg openssl
+ok "System packages installed"
+
+# ──────────────────────────────────────────────────
+# STEP 2: Install Docker
+# ──────────────────────────────────────────────────
+step 2 "Setting up Docker..."
+
+if command -v docker &> /dev/null && docker info &> /dev/null; then
+    ok "Docker already installed: $(docker --version | head -1)"
 else
-    print_error "Docker Compose not available. Please install it manually."
-    exit 1
-fi
-
-# ============================================================
-# STEP 2: Install Git and clone the repository
-# ============================================================
-print_step "Setting up the CRM application..."
-
-# Install git if needed
-if ! command -v git &> /dev/null; then
+    echo "  Installing Docker..."
     case "$OS" in
-        ubuntu|debian) apt-get install -y -qq git ;;
-        centos|rhel|rocky|almalinux|fedora) dnf install -y -q git ;;
-        amzn) yum install -y -q git ;;
+        ubuntu|debian)
+            # Remove old versions
+            apt-get remove -y -qq docker docker-engine docker.io containerd runc 2>/dev/null || true
+            install_pkg lsb-release
+            install -m 0755 -d /etc/apt/keyrings
+            curl -fsSL "https://download.docker.com/linux/$OS/gpg" | gpg --dearmor -o /etc/apt/keyrings/docker.gpg 2>/dev/null
+            chmod a+r /etc/apt/keyrings/docker.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/$OS $(. /etc/os-release && echo "$VERSION_CODENAME") stable" > /etc/apt/sources.list.d/docker.list
+            apt-get update -qq 2>/dev/null
+            apt-get install -y -qq docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin 2>/dev/null
+            ;;
+        centos|rhel|rocky|almalinux)
+            dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo 2>/dev/null || \
+                yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo 2>/dev/null
+            dnf install -y -q docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin 2>/dev/null || \
+                yum install -y -q docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin 2>/dev/null
+            ;;
+        amzn)
+            yum install -y -q docker 2>/dev/null
+            # Install Compose plugin
+            mkdir -p /usr/local/lib/docker/cli-plugins
+            COMPOSE_URL="https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)"
+            curl -fsSL "$COMPOSE_URL" -o /usr/local/lib/docker/cli-plugins/docker-compose 2>/dev/null
+            chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+            ;;
+        fedora)
+            dnf install -y -q dnf-plugins-core 2>/dev/null
+            dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo 2>/dev/null
+            dnf install -y -q docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin 2>/dev/null
+            ;;
     esac
+
+    systemctl enable docker 2>/dev/null || true
+    systemctl start docker 2>/dev/null || true
+
+    # Verify docker is running
+    if ! docker info &> /dev/null; then
+        fail "Docker failed to start. Check: systemctl status docker"
+        exit 1
+    fi
+    ok "Docker installed successfully"
 fi
 
-APP_DIR="/opt/crm"
+# Verify compose
+if docker compose version &> /dev/null; then
+    ok "Docker Compose: $(docker compose version --short 2>/dev/null || echo 'available')"
+elif command -v docker-compose &> /dev/null; then
+    ok "Docker Compose (standalone): available"
+    # Create a shim so `docker compose` works
+    if [ ! -f /usr/local/lib/docker/cli-plugins/docker-compose ]; then
+        mkdir -p /usr/local/lib/docker/cli-plugins
+        ln -sf "$(which docker-compose)" /usr/local/lib/docker/cli-plugins/docker-compose
+    fi
+else
+    fail "Docker Compose not found. Installing..."
+    mkdir -p /usr/local/lib/docker/cli-plugins
+    curl -fsSL "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" \
+        -o /usr/local/lib/docker/cli-plugins/docker-compose
+    chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+    ok "Docker Compose installed"
+fi
+
+# ──────────────────────────────────────────────────
+# STEP 3: Clone repository
+# ──────────────────────────────────────────────────
+step 3 "Setting up CRM application..."
 
 if [ -d "$APP_DIR/.git" ]; then
-    print_ok "CRM already cloned at $APP_DIR — pulling latest..."
+    ok "CRM already exists at $APP_DIR"
     cd "$APP_DIR"
-    git pull origin main || true
+    git fetch origin "$BRANCH" 2>/dev/null || true
+    git checkout "$BRANCH" 2>/dev/null || true
+    git pull origin "$BRANCH" 2>/dev/null || true
+    ok "Updated to latest code"
 else
-    print_step "Cloning CRM repository..."
-    git clone https://github.com/ravin0423/CRM.git "$APP_DIR"
+    git clone --branch "$BRANCH" "$REPO_URL" "$APP_DIR" 2>/dev/null || \
+    git clone "$REPO_URL" "$APP_DIR" 2>/dev/null
     cd "$APP_DIR"
+    ok "Cloned repository to $APP_DIR"
 fi
 
-print_ok "Application code ready at $APP_DIR"
+# ──────────────────────────────────────────────────
+# STEP 4: Generate secrets and configuration
+# ──────────────────────────────────────────────────
+step 4 "Generating secure configuration..."
 
-# ============================================================
-# STEP 3: Generate secrets and configuration
-# ============================================================
-print_step "Generating secure configuration..."
-
-# Create config directory
 mkdir -p "$APP_DIR/config"
 
-# Generate master encryption key if not exists
+# Helper: generate a random alphanumeric password
+randpass() { openssl rand -base64 24 | tr -dc 'a-zA-Z0-9' | head -c "${1:-20}"; }
+
 if [ ! -f "$APP_DIR/.env" ]; then
-    # Generate a cryptographically secure Fernet key
-    MASTER_KEY=$(python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())" 2>/dev/null || \
-                 docker run --rm python:3.11-slim python3 -c "
-import base64, os
-key = base64.urlsafe_b64encode(os.urandom(32)).decode()
-print(key)
-")
+    # Generate Fernet-compatible key (32 bytes, url-safe base64)
+    MASTER_KEY=$(openssl rand -base64 32 | tr '+/' '-_' | head -c 44)
 
-    # Generate random passwords for services
-    DB_PASS=$(openssl rand -base64 16 | tr -dc 'a-zA-Z0-9' | head -c 20)
-    RABBIT_PASS=$(openssl rand -base64 16 | tr -dc 'a-zA-Z0-9' | head -c 20)
-    MINIO_PASS=$(openssl rand -base64 16 | tr -dc 'a-zA-Z0-9' | head -c 20)
+    # Random passwords for all services
+    PG_PASS=$(randpass 20)
+    RABBIT_PASS=$(randpass 20)
+    MINIO_PASS=$(randpass 20)
+    MSSQL_PASS="CRM_$(randpass 16)!"
 
-    # Detect the machine's IP address
-    SERVER_IP=$(hostname -I 2>/dev/null | awk '{print $1}' || curl -s ifconfig.me || echo "localhost")
+    # Detect server IP
+    SERVER_IP=$(hostname -I 2>/dev/null | awk '{print $1}')
+    [ -z "$SERVER_IP" ] && SERVER_IP=$(curl -s --max-time 5 ifconfig.me 2>/dev/null || echo "localhost")
 
-    cat > "$APP_DIR/.env" <<ENVEOF
-# ============================================================
-# CRM Configuration — Auto-generated on $(date -u +"%Y-%m-%d %H:%M:%S UTC")
-# ============================================================
+    cat > "$APP_DIR/.env" <<ENVFILE
+# ── CRM Configuration ── Auto-generated $(date -u +"%Y-%m-%d %H:%M:%S UTC") ──
 
-# Encryption master key (DO NOT LOSE — encrypts all secrets at rest)
+# Master encryption key (encrypts all secrets at rest)
 CRM_MASTER_KEY_B64=${MASTER_KEY}
 
-# Environment
+# Runtime
 CRM_ENV=production
 CRM_LOG_LEVEL=INFO
-CRM_CORS_ORIGINS=http://${SERVER_IP},http://localhost
+CRM_CORS_ORIGINS=http://${SERVER_IP},http://localhost,http://127.0.0.1
 CRM_CONFIG_PATH=/app/config/admin_settings.json
 CRM_RATE_LIMIT_ENABLED=true
 
-# Database
-CRM_BOOTSTRAP_DB=sqlite
+# PostgreSQL
 POSTGRES_USER=crm
-POSTGRES_PASSWORD=${DB_PASS}
+POSTGRES_PASSWORD=${PG_PASS}
 POSTGRES_DB=crm_meta
 
-# Message broker
-RABBITMQ_USER=crm
-RABBITMQ_PASS=${RABBIT_PASS}
+# RabbitMQ
+RABBITMQ_DEFAULT_USER=crm
+RABBITMQ_DEFAULT_PASS=${RABBIT_PASS}
 CRM_CELERY_BROKER=amqp://crm:${RABBIT_PASS}@rabbitmq:5672//
 CRM_CELERY_BACKEND=redis://redis:6379/0
 
-# Object storage
+# MinIO
 MINIO_ROOT_USER=crm_admin
 MINIO_ROOT_PASSWORD=${MINIO_PASS}
 
-# SQL Server (optional — leave empty to use SQLite initially)
-MSSQL_SA_PASSWORD=Crm_Auto_$(openssl rand -base64 8 | tr -dc 'a-zA-Z0-9')!
-ENVEOF
+# SQL Server
+MSSQL_SA_PASSWORD=${MSSQL_PASS}
+
+# Bootstrap DB (sqlite for initial setup — configure real DB via Admin Panel)
+CRM_BOOTSTRAP_DB=sqlite
+ENVFILE
 
     chmod 600 "$APP_DIR/.env"
-    print_ok "Generated .env with secure random passwords"
-    print_ok "Master encryption key saved (back this up!)"
+    ok "Generated .env with secure random passwords"
 else
-    print_ok ".env already exists — keeping existing configuration"
+    ok ".env already exists — keeping current configuration"
 fi
 
-# Source the env file for variable substitution
-set -a
-source "$APP_DIR/.env"
-set +a
-
-# Create admin_settings.json if it doesn't exist
+# Create admin_settings.json
 if [ ! -f "$APP_DIR/config/admin_settings.json" ]; then
-    cat > "$APP_DIR/config/admin_settings.json" <<CFGEOF
+    cat > "$APP_DIR/config/admin_settings.json" <<'CFGFILE'
 {
   "version": 1,
-  "database": {
-    "type": "sqlserver",
-    "sqlserver": {},
-    "mongodb": {}
-  },
+  "database": { "type": "sqlserver", "sqlserver": {}, "mongodb": {} },
   "email": {},
   "storage": {
     "type": "minio",
-    "minio": {
-      "endpoint": "http://minio:9000",
-      "access_key": "${MINIO_ROOT_USER:-crm_admin}",
-      "bucket": "crm-files"
-    },
+    "minio": { "endpoint": "http://minio:9000", "access_key": "crm_admin", "bucket": "crm-files" },
     "s3": {}
   },
-  "api": {
-    "base_url": "http://localhost:8000/api/v1",
-    "timezone": "UTC",
-    "session_timeout_minutes": 30,
-    "max_upload_mb": 100,
-    "debug": false
-  },
-  "integrations": {
-    "freshdesk": {"enabled": false},
-    "slack": {"enabled": false},
-    "calendar": {"enabled": false}
-  },
-  "backup": {
-    "schedule_hours": 6,
-    "location": "local",
-    "retention_count": 10
-  }
+  "api": { "base_url": "http://localhost:8000/api/v1", "timezone": "UTC", "session_timeout_minutes": 30, "max_upload_mb": 100, "debug": false },
+  "integrations": { "freshdesk": {"enabled": false}, "slack": {"enabled": false}, "calendar": {"enabled": false} },
+  "backup": { "schedule_hours": 6, "location": "local", "retention_count": 10 }
 }
-CFGEOF
-    print_ok "Generated initial admin_settings.json"
+CFGFILE
+    ok "Generated admin_settings.json"
 fi
 
-# ============================================================
-# STEP 4: Create production docker-compose override
-# ============================================================
-print_step "Configuring Docker services for production..."
+# Create frontend runtime config
+mkdir -p "$APP_DIR/frontend/public"
+cat > "$APP_DIR/frontend/public/config.json" <<RTCFG
+{
+  "apiBaseUrl": "/api/v1",
+  "appName": "Support CRM",
+  "version": "1.0.0"
+}
+RTCFG
+ok "Frontend runtime config ready"
 
-cat > "$APP_DIR/docker-compose.override.yml" <<'DOCKEOF'
+# ──────────────────────────────────────────────────
+# STEP 5: Production docker-compose override
+# ──────────────────────────────────────────────────
+step 5 "Configuring production Docker services..."
+
+# Remove dev override if it exists and create production one
+cat > "$APP_DIR/docker-compose.override.yml" <<'OVERRIDE'
 # Production overrides — generated by deploy.sh
 services:
   backend:
     environment:
       CRM_ENV: production
       CRM_LOG_LEVEL: INFO
+    volumes:
+      - ./config:/app/config
     restart: always
 
   worker:
@@ -271,105 +314,142 @@ services:
 
   minio:
     restart: always
-DOCKEOF
+OVERRIDE
 
-print_ok "Docker Compose production config ready"
+ok "Production Docker config ready"
 
-# ============================================================
-# STEP 5: Open firewall ports
-# ============================================================
-print_step "Configuring firewall..."
+# ──────────────────────────────────────────────────
+# STEP 6: Firewall
+# ──────────────────────────────────────────────────
+step 6 "Configuring firewall..."
 
 if command -v ufw &> /dev/null; then
-    ufw allow 80/tcp   2>/dev/null || true   # Frontend
-    ufw allow 8000/tcp 2>/dev/null || true   # Backend API
-    print_ok "Opened ports 80 and 8000 (ufw)"
+    ufw allow 80/tcp   2>/dev/null || true
+    ufw allow 443/tcp  2>/dev/null || true
+    ufw allow 8000/tcp 2>/dev/null || true
+    ok "Opened ports 80, 443, 8000 (ufw)"
 elif command -v firewall-cmd &> /dev/null; then
     firewall-cmd --permanent --add-port=80/tcp   2>/dev/null || true
+    firewall-cmd --permanent --add-port=443/tcp  2>/dev/null || true
     firewall-cmd --permanent --add-port=8000/tcp 2>/dev/null || true
     firewall-cmd --reload 2>/dev/null || true
-    print_ok "Opened ports 80 and 8000 (firewalld)"
+    ok "Opened ports 80, 443, 8000 (firewalld)"
+elif command -v iptables &> /dev/null; then
+    iptables -I INPUT -p tcp --dport 80 -j ACCEPT 2>/dev/null || true
+    iptables -I INPUT -p tcp --dport 443 -j ACCEPT 2>/dev/null || true
+    iptables -I INPUT -p tcp --dport 8000 -j ACCEPT 2>/dev/null || true
+    ok "Opened ports 80, 443, 8000 (iptables)"
 else
-    print_warn "No firewall manager found — make sure ports 80 and 8000 are open in your CloudStack security group"
+    warn "No firewall detected — ensure ports 80 and 8000 are open in your CloudStack security group"
 fi
 
-# ============================================================
-# STEP 6: Build and launch
-# ============================================================
-print_step "Building and starting all services (this takes 3-5 minutes on first run)..."
+# ──────────────────────────────────────────────────
+# STEP 7: Build and launch
+# ──────────────────────────────────────────────────
+step 7 "Building and starting services (this may take 3-8 minutes)..."
 
 cd "$APP_DIR"
 
-# Remove old override if it was the dev one
-docker compose build --no-cache 2>&1 | tail -5
+# Stop existing containers if running
+docker compose down 2>/dev/null || true
 
-print_step "Starting services..."
+# Build
+echo "  Building containers..."
+docker compose build 2>&1 | while IFS= read -r line; do
+    # Only show key build events
+    case "$line" in
+        *"Building"*|*"Successfully"*|*"FINISHED"*|*"ERROR"*)
+            echo "  $line"
+            ;;
+    esac
+done
+
+# Start
+echo "  Starting containers..."
 docker compose up -d 2>&1
 
-# ============================================================
-# STEP 7: Wait for services to be healthy
-# ============================================================
-print_step "Waiting for services to come up..."
+ok "All containers started"
 
-MAX_WAIT=120
+# ──────────────────────────────────────────────────
+# STEP 8: Health check
+# ──────────────────────────────────────────────────
+step 8 "Verifying deployment..."
+
+echo "  Waiting for services to initialize..."
+
+BACKEND_OK=false
+FRONTEND_OK=false
+MAX_WAIT=180
 ELAPSED=0
 
 while [ $ELAPSED -lt $MAX_WAIT ]; do
-    # Check if backend is healthy
-    if curl -sf http://localhost:8000/health > /dev/null 2>&1; then
-        print_ok "Backend is healthy"
+    # Check backend
+    if [ "$BACKEND_OK" = false ] && curl -sf http://localhost:8000/health > /dev/null 2>&1; then
+        ok "Backend API is healthy"
+        BACKEND_OK=true
+    fi
+
+    # Check frontend
+    if [ "$FRONTEND_OK" = false ] && curl -sf http://localhost:80 > /dev/null 2>&1; then
+        ok "Frontend is healthy"
+        FRONTEND_OK=true
+    fi
+
+    # Both up? Done.
+    if [ "$BACKEND_OK" = true ] && [ "$FRONTEND_OK" = true ]; then
         break
     fi
-    sleep 5
-    ELAPSED=$((ELAPSED + 5))
-    echo -n "."
+
+    sleep 3
+    ELAPSED=$((ELAPSED + 3))
+    printf "."
 done
-
-if [ $ELAPSED -ge $MAX_WAIT ]; then
-    print_warn "Backend didn't become healthy in ${MAX_WAIT}s. Checking logs..."
-    docker compose logs backend --tail=20
-    echo ""
-    print_warn "Services may still be starting. Check with: docker compose logs -f"
-fi
-
-# Check frontend
-if curl -sf http://localhost:80 > /dev/null 2>&1; then
-    print_ok "Frontend is healthy"
-elif curl -sf http://localhost:3000 > /dev/null 2>&1; then
-    print_ok "Frontend is healthy (port 3000)"
-fi
-
-# ============================================================
-# STEP 8: Show status and login info
-# ============================================================
-echo ""
-echo -e "${GREEN}============================================================${NC}"
-echo -e "${GREEN}   CRM DEPLOYMENT COMPLETE!${NC}"
-echo -e "${GREEN}============================================================${NC}"
 echo ""
 
+if [ "$BACKEND_OK" = false ]; then
+    warn "Backend may still be starting. Check: docker compose logs backend"
+fi
+if [ "$FRONTEND_OK" = false ]; then
+    warn "Frontend may still be starting. Check: docker compose logs frontend"
+fi
+
+# Show container status
+echo ""
+echo "  Container Status:"
+docker compose ps --format "table {{.Name}}\t{{.Status}}\t{{.Ports}}" 2>/dev/null || \
+docker compose ps 2>/dev/null
+
+# ──────────────────────────────────────────────────
+# Done
+# ──────────────────────────────────────────────────
 SERVER_IP=$(hostname -I 2>/dev/null | awk '{print $1}' || echo "your-server-ip")
 
-echo -e "  ${BLUE}Application URL:${NC}    http://${SERVER_IP}"
-echo -e "  ${BLUE}API URL:${NC}            http://${SERVER_IP}:8000"
-echo -e "  ${BLUE}API Health Check:${NC}   http://${SERVER_IP}:8000/health"
-echo -e "  ${BLUE}RabbitMQ Console:${NC}   http://${SERVER_IP}:15672"
-echo -e "  ${BLUE}MinIO Console:${NC}      http://${SERVER_IP}:9001"
 echo ""
-echo -e "  ${YELLOW}Default Login:${NC}"
-echo -e "    Email:    admin@company.com"
-echo -e "    Password: password123"
+echo -e "${BOLD}${GREEN}╔══════════════════════════════════════════════╗${NC}"
+echo -e "${BOLD}${GREEN}║         DEPLOYMENT COMPLETE!                 ║${NC}"
+echo -e "${BOLD}${GREEN}╚══════════════════════════════════════════════╝${NC}"
 echo ""
-echo -e "  ${RED}>>> IMPORTANT: Change the admin password immediately after first login! <<<${NC}"
+echo -e "  ${BOLD}Access your CRM:${NC}"
+echo -e "    ${CYAN}Web App:${NC}          http://${SERVER_IP}"
+echo -e "    ${CYAN}API:${NC}              http://${SERVER_IP}:8000"
+echo -e "    ${CYAN}Health Check:${NC}     http://${SERVER_IP}:8000/health"
+echo -e "    ${CYAN}RabbitMQ Admin:${NC}   http://${SERVER_IP}:15672"
+echo -e "    ${CYAN}MinIO Console:${NC}    http://${SERVER_IP}:9001"
 echo ""
-echo -e "  ${BLUE}Useful Commands:${NC}"
-echo -e "    View logs:      cd $APP_DIR && docker compose logs -f"
-echo -e "    Restart:        cd $APP_DIR && docker compose restart"
-echo -e "    Stop:           cd $APP_DIR && docker compose down"
-echo -e "    Update:         cd $APP_DIR && git pull && docker compose up -d --build"
-echo -e "    Backup key:     cat $APP_DIR/.env | grep MASTER_KEY"
+echo -e "  ${BOLD}Login Credentials:${NC}"
+echo -e "    ${CYAN}Email:${NC}     admin@company.com"
+echo -e "    ${CYAN}Password:${NC}  password123"
 echo ""
-echo -e "  ${YELLOW}Your master encryption key is in $APP_DIR/.env${NC}"
-echo -e "  ${YELLOW}BACK IT UP — if you lose it, encrypted settings cannot be recovered.${NC}"
+echo -e "  ${RED}${BOLD}>>> CHANGE THE DEFAULT PASSWORD IMMEDIATELY <<<${NC}"
 echo ""
-echo -e "${GREEN}============================================================${NC}"
+echo -e "  ${BOLD}Management Commands:${NC}"
+echo -e "    View logs:      ${CYAN}cd $APP_DIR && docker compose logs -f${NC}"
+echo -e "    Restart:        ${CYAN}cd $APP_DIR && docker compose restart${NC}"
+echo -e "    Stop:           ${CYAN}cd $APP_DIR && docker compose down${NC}"
+echo -e "    Update:         ${CYAN}cd $APP_DIR && git pull && docker compose up -d --build${NC}"
+echo -e "    View status:    ${CYAN}cd $APP_DIR && docker compose ps${NC}"
+echo -e "    Backup key:     ${CYAN}grep MASTER_KEY $APP_DIR/.env${NC}"
+echo ""
+echo -e "  ${YELLOW}${BOLD}IMPORTANT:${NC} Your encryption key is in ${CYAN}$APP_DIR/.env${NC}"
+echo -e "  ${YELLOW}Back it up securely — lost keys mean lost encrypted data.${NC}"
+echo ""

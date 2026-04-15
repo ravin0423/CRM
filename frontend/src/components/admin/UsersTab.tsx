@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { UserPlus, Key, Edit2, Check, X, Power } from "lucide-react";
 
 import { api } from "../../lib/api";
 
@@ -63,21 +64,23 @@ export default function UsersTab() {
     },
   });
 
-  if (isLoading) return <p>Loading...</p>;
+  if (isLoading) return <p style={{ color: "var(--text-muted)" }}>Loading...</p>;
+
+  const roleBadge = (role: string) =>
+    role === "admin" ? "badge badge-purple" : role === "agent" ? "badge badge-blue" : "badge badge-slate";
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 animate-fade-in">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">User Management</h2>
-        <button
-          onClick={() => setShowCreate(true)}
-          className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
-        >
-          + New User
+        <h2 className="text-xl font-semibold" style={{ color: "var(--text-primary)" }}>
+          User Management
+        </h2>
+        <button onClick={() => setShowCreate(true)} className="btn btn-primary btn-sm">
+          <UserPlus size={14} /> New User
         </button>
       </div>
 
-      <p className="text-sm text-slate-600">
+      <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
         Role-based access control: Admin (full access), Agent (tickets + contacts), Viewer (read-only).
       </p>
 
@@ -100,89 +103,66 @@ export default function UsersTab() {
         />
       )}
 
-      <table className="w-full bg-white rounded shadow text-sm">
-        <thead className="bg-slate-100 text-left">
-          <tr>
-            <th className="px-3 py-2">Name</th>
-            <th className="px-3 py-2">Email</th>
-            <th className="px-3 py-2">Role</th>
-            <th className="px-3 py-2">Status</th>
-            <th className="px-3 py-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((u) => (
-            <tr key={u.id} className="border-t">
-              {editingId === u.id ? (
-                <EditUserRow
-                  user={u}
-                  onSave={(patch) => updateMut.mutate({ id: u.id, ...patch })}
-                  onCancel={() => setEditingId(null)}
-                  isPending={updateMut.isPending}
-                />
-              ) : (
-                <>
-                  <td className="px-3 py-2">{u.name}</td>
-                  <td className="px-3 py-2">{u.email}</td>
-                  <td className="px-3 py-2">
-                    <span
-                      className={`px-2 py-0.5 rounded text-xs font-medium ${
-                        u.role === "admin"
-                          ? "bg-purple-100 text-purple-700"
-                          : u.role === "agent"
-                            ? "bg-blue-100 text-blue-700"
-                            : "bg-gray-100 text-gray-700"
-                      }`}
-                    >
-                      {u.role}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2">
-                    <span
-                      className={`px-2 py-0.5 rounded text-xs font-medium ${
-                        u.status === "active"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
-                      }`}
-                    >
-                      {u.status}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2 space-x-2">
-                    <button
-                      onClick={() => setEditingId(u.id)}
-                      className="text-blue-600 hover:underline text-xs"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => setResetId(u.id)}
-                      className="text-amber-600 hover:underline text-xs"
-                    >
-                      Reset PW
-                    </button>
-                    {u.status === "active" ? (
-                      <button
-                        onClick={() => updateMut.mutate({ id: u.id, status: "inactive" })}
-                        className="text-red-600 hover:underline text-xs"
-                      >
-                        Deactivate
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => updateMut.mutate({ id: u.id, status: "active" })}
-                        className="text-green-600 hover:underline text-xs"
-                      >
-                        Activate
-                      </button>
-                    )}
-                  </td>
-                </>
-              )}
+      <div className="table-wrapper">
+        <table className="w-full text-sm">
+          <thead style={{ background: "var(--bg-elevated)" }}>
+            <tr className="text-left">
+              <th className="px-3 py-2" style={{ color: "var(--text-secondary)" }}>Name</th>
+              <th className="px-3 py-2" style={{ color: "var(--text-secondary)" }}>Email</th>
+              <th className="px-3 py-2" style={{ color: "var(--text-secondary)" }}>Role</th>
+              <th className="px-3 py-2" style={{ color: "var(--text-secondary)" }}>Status</th>
+              <th className="px-3 py-2" style={{ color: "var(--text-secondary)" }}>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {users.map((u) => (
+              <tr key={u.id} style={{ borderTop: "1px solid var(--border-color)" }}>
+                {editingId === u.id ? (
+                  <EditUserRow
+                    user={u}
+                    onSave={(patch) => updateMut.mutate({ id: u.id, ...patch })}
+                    onCancel={() => setEditingId(null)}
+                    isPending={updateMut.isPending}
+                  />
+                ) : (
+                  <>
+                    <td className="px-3 py-2" style={{ color: "var(--text-primary)" }}>{u.name}</td>
+                    <td className="px-3 py-2" style={{ color: "var(--text-secondary)" }}>{u.email}</td>
+                    <td className="px-3 py-2">
+                      <span className={roleBadge(u.role)}>{u.role}</span>
+                    </td>
+                    <td className="px-3 py-2">
+                      <span className={u.status === "active" ? "badge badge-green" : "badge badge-red"}>
+                        {u.status}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2 space-x-2">
+                      <button onClick={() => setEditingId(u.id)} className="btn btn-ghost btn-sm">
+                        <Edit2 size={12} /> Edit
+                      </button>
+                      <button onClick={() => setResetId(u.id)} className="btn btn-ghost btn-sm">
+                        <Key size={12} /> Reset PW
+                      </button>
+                      <button
+                        onClick={() =>
+                          updateMut.mutate({
+                            id: u.id,
+                            status: u.status === "active" ? "inactive" : "active",
+                          })
+                        }
+                        className="btn btn-ghost btn-sm"
+                        style={{ color: u.status === "active" ? "var(--danger)" : "var(--success)" }}
+                      >
+                        <Power size={12} /> {u.status === "active" ? "Deactivate" : "Activate"}
+                      </button>
+                    </td>
+                  </>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -204,41 +184,32 @@ function CreateUserForm({
   const [role, setRole] = useState<"admin" | "agent" | "viewer">("agent");
 
   return (
-    <div className="border rounded p-4 bg-slate-50 space-y-3">
-      <h3 className="font-medium">Create New User</h3>
+    <div className="glass-card p-4 space-y-3">
+      <h3 className="font-medium" style={{ color: "var(--text-primary)" }}>Create New User</h3>
       <div className="grid grid-cols-2 gap-3">
         <label className="block">
-          <span className="text-sm text-slate-600">Email</span>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 block w-full border rounded px-2 py-1 text-sm"
-          />
+          <span className="text-xs" style={{ color: "var(--text-secondary)" }}>Email</span>
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="input mt-1" />
         </label>
         <label className="block">
-          <span className="text-sm text-slate-600">Name</span>
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="mt-1 block w-full border rounded px-2 py-1 text-sm"
-          />
+          <span className="text-xs" style={{ color: "var(--text-secondary)" }}>Name</span>
+          <input value={name} onChange={(e) => setName(e.target.value)} className="input mt-1" />
         </label>
         <label className="block">
-          <span className="text-sm text-slate-600">Password</span>
+          <span className="text-xs" style={{ color: "var(--text-secondary)" }}>Password</span>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 block w-full border rounded px-2 py-1 text-sm"
+            className="input mt-1"
           />
         </label>
         <label className="block">
-          <span className="text-sm text-slate-600">Role</span>
+          <span className="text-xs" style={{ color: "var(--text-secondary)" }}>Role</span>
           <select
             value={role}
             onChange={(e) => setRole(e.target.value as typeof role)}
-            className="mt-1 block w-full border rounded px-2 py-1 text-sm"
+            className="input mt-1"
           >
             <option value="agent">Agent</option>
             <option value="admin">Admin</option>
@@ -246,16 +217,20 @@ function CreateUserForm({
           </select>
         </label>
       </div>
-      {error && <p className="text-red-600 text-sm">{error}</p>}
+      {error && (
+        <p className="text-sm" style={{ color: "var(--danger)" }}>
+          {error}
+        </p>
+      )}
       <div className="flex gap-2">
         <button
           disabled={isPending || !email || !name || !password}
           onClick={() => onSubmit({ email, name, password, role })}
-          className="px-3 py-1 bg-blue-600 text-white rounded text-sm disabled:opacity-50"
+          className="btn btn-primary btn-sm"
         >
           {isPending ? "Creating..." : "Create"}
         </button>
-        <button onClick={onCancel} className="px-3 py-1 border rounded text-sm">
+        <button onClick={onCancel} className="btn btn-secondary btn-sm">
           Cancel
         </button>
       </div>
@@ -280,25 +255,17 @@ function EditUserRow({
   return (
     <>
       <td className="px-3 py-2">
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="w-full border rounded px-2 py-1 text-sm"
-        />
+        <input value={name} onChange={(e) => setName(e.target.value)} className="input" />
       </td>
-      <td className="px-3 py-2 text-slate-500">{user.email}</td>
+      <td className="px-3 py-2" style={{ color: "var(--text-muted)" }}>{user.email}</td>
       <td className="px-3 py-2">
-        <select
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
-          className="border rounded px-2 py-1 text-sm"
-        >
+        <select value={role} onChange={(e) => setRole(e.target.value)} className="input">
           <option value="admin">admin</option>
           <option value="agent">agent</option>
           <option value="viewer">viewer</option>
         </select>
       </td>
-      <td className="px-3 py-2">{user.status}</td>
+      <td className="px-3 py-2" style={{ color: "var(--text-secondary)" }}>{user.status}</td>
       <td className="px-3 py-2 space-x-2">
         <button
           disabled={isPending}
@@ -308,12 +275,13 @@ function EditUserRow({
               ...(role !== user.role ? { role: role as "admin" | "agent" | "viewer" } : {}),
             })
           }
-          className="text-green-600 hover:underline text-xs"
+          className="btn btn-ghost btn-sm"
+          style={{ color: "var(--success)" }}
         >
-          Save
+          <Check size={12} /> Save
         </button>
-        <button onClick={onCancel} className="text-slate-500 hover:underline text-xs">
-          Cancel
+        <button onClick={onCancel} className="btn btn-ghost btn-sm">
+          <X size={12} /> Cancel
         </button>
       </td>
     </>
@@ -336,27 +304,36 @@ function ResetPasswordForm({
   const [pw, setPw] = useState("");
 
   return (
-    <div className="border rounded p-4 bg-amber-50 space-y-3">
-      <h3 className="font-medium">Reset Password — User #{userId}</h3>
-      <label className="block">
-        <span className="text-sm text-slate-600">New Password</span>
+    <div
+      className="glass-card p-4 space-y-3"
+      style={{ borderColor: "var(--warning)", borderWidth: "1px" }}
+    >
+      <h3 className="font-medium" style={{ color: "var(--warning)" }}>
+        Reset Password — User #{userId}
+      </h3>
+      <label className="block max-w-xs">
+        <span className="text-xs" style={{ color: "var(--text-secondary)" }}>New Password</span>
         <input
           type="password"
           value={pw}
           onChange={(e) => setPw(e.target.value)}
-          className="mt-1 block w-full border rounded px-2 py-1 text-sm max-w-xs"
+          className="input mt-1"
         />
       </label>
-      {error && <p className="text-red-600 text-sm">{error}</p>}
+      {error && (
+        <p className="text-sm" style={{ color: "var(--danger)" }}>
+          {error}
+        </p>
+      )}
       <div className="flex gap-2">
         <button
           disabled={isPending || pw.length < 6}
           onClick={() => onSubmit(pw)}
-          className="px-3 py-1 bg-amber-600 text-white rounded text-sm disabled:opacity-50"
+          className="btn btn-primary btn-sm"
         >
           {isPending ? "Resetting..." : "Reset Password"}
         </button>
-        <button onClick={onCancel} className="px-3 py-1 border rounded text-sm">
+        <button onClick={onCancel} className="btn btn-secondary btn-sm">
           Cancel
         </button>
       </div>

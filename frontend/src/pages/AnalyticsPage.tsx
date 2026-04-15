@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { BarChart3, TrendingUp, Users, BookOpen, Ticket, Clock, CheckCircle2, XCircle } from "lucide-react";
 
 import { api } from "../lib/api";
 
@@ -39,80 +40,175 @@ export default function AnalyticsPage() {
     refetchInterval: 15_000,
   });
 
-  if (isLoading || !dash) return <p>Loading dashboard...</p>;
+  if (isLoading || !dash) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <BarChart3 size={28} style={{ color: "var(--accent)" }} />
+          <h1 className="text-2xl font-semibold" style={{ color: "var(--text-primary)" }}>
+            Analytics Dashboard
+          </h1>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div
+              key={i}
+              className="glass-card p-5"
+              style={{ borderLeft: "3px solid var(--border-color)" }}
+            >
+              <div
+                className="rounded"
+                style={{
+                  height: "0.875rem",
+                  width: "60%",
+                  marginBottom: "0.75rem",
+                  background: "var(--bg-elevated)",
+                  animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+                }}
+              />
+              <div
+                className="rounded"
+                style={{
+                  height: "1.75rem",
+                  width: "40%",
+                  background: "var(--bg-elevated)",
+                  animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+                }}
+              />
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <div key={i} className="glass-card p-6">
+              <div
+                className="rounded"
+                style={{
+                  height: "1rem",
+                  width: "50%",
+                  marginBottom: "1rem",
+                  background: "var(--bg-elevated)",
+                  animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+                }}
+              />
+              <div className="space-y-3">
+                {Array.from({ length: 4 }).map((_, j) => (
+                  <div
+                    key={j}
+                    className="rounded"
+                    style={{
+                      height: "1.25rem",
+                      background: "var(--bg-elevated)",
+                      animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+        <style>{`@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }`}</style>
+      </div>
+    );
+  }
 
   const t = dash.tickets;
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Analytics Dashboard</h1>
+      <div className="flex items-center gap-3">
+        <BarChart3 size={28} style={{ color: "var(--accent)" }} />
+        <h1 className="text-2xl font-semibold" style={{ color: "var(--text-primary)" }}>
+          Analytics Dashboard
+        </h1>
+      </div>
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="Total Tickets" value={t.total} />
-        <StatCard label="Open" value={t.open} color="blue" />
-        <StatCard label="Pending" value={t.pending} color="amber" />
-        <StatCard label="Resolved" value={t.resolved} color="green" />
-        <StatCard label="Closed" value={t.closed} color="slate" />
-        <StatCard label="Contacts" value={dash.contacts_total} />
-        <StatCard label="Users" value={dash.users_total} />
-        <StatCard label="KB Articles" value={dash.articles_total} />
+        <StatCard label="Total Tickets" value={t.total} color="var(--accent)" icon={<Ticket size={18} />} />
+        <StatCard label="Open" value={t.open} color="var(--accent)" icon={<Clock size={18} />} />
+        <StatCard label="Pending" value={t.pending} color="var(--warning)" icon={<TrendingUp size={18} />} />
+        <StatCard label="Resolved" value={t.resolved} color="var(--success)" icon={<CheckCircle2 size={18} />} />
+        <StatCard label="Closed" value={t.closed} color="var(--text-muted)" icon={<XCircle size={18} />} />
+        <StatCard label="Contacts" value={dash.contacts_total} color="var(--accent)" icon={<Users size={18} />} />
+        <StatCard label="Users" value={dash.users_total} color="var(--success)" icon={<Users size={18} />} />
+        <StatCard label="KB Articles" value={dash.articles_total} color="var(--warning)" icon={<BookOpen size={18} />} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Ticket status breakdown */}
-        <div className="bg-white rounded shadow p-4">
-          <h2 className="font-medium mb-3">Tickets by Status</h2>
+        <div className="glass-card p-6">
+          <h2 className="font-medium mb-4" style={{ color: "var(--text-primary)" }}>
+            Tickets by Status
+          </h2>
           <BarChart
             data={[
-              { label: "Open", value: t.open, color: "bg-blue-500" },
-              { label: "Pending", value: t.pending, color: "bg-amber-500" },
-              { label: "Resolved", value: t.resolved, color: "bg-green-500" },
-              { label: "Closed", value: t.closed, color: "bg-slate-400" },
+              { label: "Open", value: t.open, gradient: "linear-gradient(90deg, #3b82f6, #60a5fa)" },
+              { label: "Pending", value: t.pending, gradient: "linear-gradient(90deg, #f59e0b, #fbbf24)" },
+              { label: "Resolved", value: t.resolved, gradient: "linear-gradient(90deg, #10b981, #34d399)" },
+              { label: "Closed", value: t.closed, gradient: "linear-gradient(90deg, #64748b, #94a3b8)" },
             ]}
           />
         </div>
 
         {/* Priority breakdown */}
-        <div className="bg-white rounded shadow p-4">
-          <h2 className="font-medium mb-3">Tickets by Priority</h2>
+        <div className="glass-card p-6">
+          <h2 className="font-medium mb-4" style={{ color: "var(--text-primary)" }}>
+            Tickets by Priority
+          </h2>
           <BarChart
             data={[
-              { label: "Low", value: dash.priority_breakdown.low ?? 0, color: "bg-slate-400" },
-              { label: "Medium", value: dash.priority_breakdown.medium ?? 0, color: "bg-blue-400" },
-              { label: "High", value: dash.priority_breakdown.high ?? 0, color: "bg-amber-500" },
-              { label: "Urgent", value: dash.priority_breakdown.urgent ?? 0, color: "bg-red-500" },
+              { label: "Low", value: dash.priority_breakdown.low ?? 0, gradient: "linear-gradient(90deg, #64748b, #94a3b8)" },
+              { label: "Medium", value: dash.priority_breakdown.medium ?? 0, gradient: "linear-gradient(90deg, #3b82f6, #60a5fa)" },
+              { label: "High", value: dash.priority_breakdown.high ?? 0, gradient: "linear-gradient(90deg, #f59e0b, #fbbf24)" },
+              { label: "Urgent", value: dash.priority_breakdown.urgent ?? 0, gradient: "linear-gradient(90deg, #ef4444, #f87171)" },
             ]}
           />
         </div>
       </div>
 
       {/* Recent activity */}
-      <div className="bg-white rounded shadow p-4">
-        <h2 className="font-medium mb-3">Recent Activity</h2>
+      <div className="glass-card p-6">
+        <h2 className="font-medium mb-4" style={{ color: "var(--text-primary)" }}>
+          Recent Activity
+        </h2>
         {activity.length === 0 ? (
-          <p className="text-sm text-slate-500">No activity yet.</p>
+          <p className="text-sm" style={{ color: "var(--text-muted)" }}>No activity yet.</p>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-left">
-              <tr>
-                <th className="px-2 py-1.5">Action</th>
-                <th className="px-2 py-1.5">Entity</th>
-                <th className="px-2 py-1.5">Entity ID</th>
-                <th className="px-2 py-1.5">User ID</th>
-              </tr>
-            </thead>
-            <tbody>
-              {activity.map((a) => (
-                <tr key={a.id} className="border-t">
-                  <td className="px-2 py-1.5 font-mono text-xs">{a.action}</td>
-                  <td className="px-2 py-1.5">{a.entity_type}</td>
-                  <td className="px-2 py-1.5 text-slate-500">{a.entity_id ?? "-"}</td>
-                  <td className="px-2 py-1.5 text-slate-500">{a.user_id ?? "-"}</td>
+          <div className="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Action</th>
+                  <th>Entity</th>
+                  <th>Entity ID</th>
+                  <th>User ID</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {activity.map((a) => (
+                  <tr key={a.id}>
+                    <td>
+                      <code
+                        className="text-xs"
+                        style={{
+                          padding: "0.125rem 0.375rem",
+                          borderRadius: "0.25rem",
+                          background: "var(--bg-elevated)",
+                          color: "var(--accent)",
+                        }}
+                      >
+                        {a.action}
+                      </code>
+                    </td>
+                    <td>{a.entity_type}</td>
+                    <td style={{ color: "var(--text-muted)" }}>{a.entity_id ?? "-"}</td>
+                    <td style={{ color: "var(--text-muted)" }}>{a.user_id ?? "-"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>
@@ -122,23 +218,24 @@ export default function AnalyticsPage() {
 function StatCard({
   label,
   value,
-  color = "slate",
+  color,
+  icon,
 }: {
   label: string;
   value: number;
-  color?: string;
+  color: string;
+  icon?: React.ReactNode;
 }) {
-  const colorMap: Record<string, string> = {
-    blue: "text-blue-600",
-    amber: "text-amber-600",
-    green: "text-green-600",
-    red: "text-red-600",
-    slate: "text-slate-700",
-  };
   return (
-    <div className="bg-white rounded shadow p-4">
-      <p className="text-sm text-slate-500">{label}</p>
-      <p className={`text-2xl font-bold ${colorMap[color] ?? "text-slate-700"}`}>{value}</p>
+    <div
+      className="glass-card p-5"
+      style={{ borderLeft: `3px solid ${color}` }}
+    >
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>{label}</p>
+        {icon && <span style={{ color }}>{icon}</span>}
+      </div>
+      <p className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>{value}</p>
     </div>
   );
 }
@@ -146,21 +243,43 @@ function StatCard({
 function BarChart({
   data,
 }: {
-  data: { label: string; value: number; color: string }[];
+  data: { label: string; value: number; gradient: string }[];
 }) {
   const max = Math.max(...data.map((d) => d.value), 1);
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {data.map((d) => (
-        <div key={d.label} className="flex items-center gap-2">
-          <span className="w-16 text-xs text-slate-600 text-right">{d.label}</span>
-          <div className="flex-1 bg-slate-100 rounded h-5 overflow-hidden">
+        <div key={d.label} className="flex items-center gap-3">
+          <span
+            className="text-xs text-right"
+            style={{ width: "4rem", color: "var(--text-secondary)" }}
+          >
+            {d.label}
+          </span>
+          <div
+            className="flex-1 overflow-hidden"
+            style={{
+              height: "1.5rem",
+              borderRadius: "0.375rem",
+              background: "var(--bg-elevated)",
+            }}
+          >
             <div
-              className={`h-full ${d.color} rounded transition-all duration-300`}
-              style={{ width: `${(d.value / max) * 100}%` }}
+              style={{
+                height: "100%",
+                width: `${(d.value / max) * 100}%`,
+                background: d.gradient,
+                borderRadius: "0.375rem",
+                transition: "all 0.3s ease",
+              }}
             />
           </div>
-          <span className="w-8 text-xs text-slate-500 text-right">{d.value}</span>
+          <span
+            className="text-xs text-right font-medium"
+            style={{ width: "2rem", color: "var(--text-muted)" }}
+          >
+            {d.value}
+          </span>
         </div>
       ))}
     </div>

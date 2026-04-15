@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Plus, Search, BookOpen, Edit2, Trash2, Eye, EyeOff } from "lucide-react";
 
 import { api } from "../lib/api";
 
@@ -58,31 +59,73 @@ export default function KnowledgePage() {
 
   const displayList = searchQuery.length >= 2 && searchResults ? searchResults : articles;
 
-  if (isLoading) return <p>Loading...</p>;
+  if (isLoading)
+    return (
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}>
+        <div style={{ color: "var(--text-muted)", fontSize: "0.875rem" }}>Loading articles...</div>
+      </div>
+    );
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Knowledge Base</h1>
-        <button
-          onClick={() => setShowCreate(true)}
-          className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
-        >
-          + New Article
+    <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+          <div
+            style={{
+              width: "2.5rem",
+              height: "2.5rem",
+              borderRadius: "0.75rem",
+              background: "rgba(59, 130, 246, 0.15)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <BookOpen size={20} style={{ color: "var(--accent)" }} />
+          </div>
+          <div>
+            <h1 style={{ fontSize: "1.5rem", fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>
+              Knowledge Base
+            </h1>
+            <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: 0 }}>
+              {articles.length} article{articles.length !== 1 ? "s" : ""}
+            </p>
+          </div>
+        </div>
+        <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
+          <Plus size={16} />
+          New Article
         </button>
       </div>
 
-      <div className="flex gap-3">
-        <input
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search articles..."
-          className="flex-1 border rounded px-3 py-1.5 text-sm"
-        />
+      {/* Search & Filter */}
+      <div style={{ display: "flex", gap: "0.75rem" }}>
+        <div style={{ flex: 1, position: "relative" }}>
+          <Search
+            size={16}
+            style={{
+              position: "absolute",
+              left: "0.75rem",
+              top: "50%",
+              transform: "translateY(-50%)",
+              color: "var(--text-muted)",
+              pointerEvents: "none",
+            }}
+          />
+          <input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search articles..."
+            className="input"
+            style={{ paddingLeft: "2.25rem" }}
+          />
+        </div>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="border rounded px-3 py-1.5 text-sm"
+          className="input"
+          style={{ width: "auto", minWidth: "10rem" }}
         >
           <option value="">All status</option>
           <option value="draft">Draft</option>
@@ -90,6 +133,7 @@ export default function KnowledgePage() {
         </select>
       </div>
 
+      {/* Create Form */}
       {showCreate && (
         <ArticleForm
           onSubmit={(d) => createMut.mutate(d)}
@@ -98,7 +142,8 @@ export default function KnowledgePage() {
         />
       )}
 
-      <div className="space-y-2">
+      {/* Article List */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
         {displayList.map((a) =>
           editingId === a.id ? (
             <ArticleForm
@@ -109,44 +154,80 @@ export default function KnowledgePage() {
               isPending={updateMut.isPending}
             />
           ) : (
-            <div key={a.id} className="bg-white rounded shadow p-4 flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-medium">{a.title}</h3>
-                  <span
-                    className={`text-xs px-2 py-0.5 rounded ${
-                      a.status === "published"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-amber-100 text-amber-700"
-                    }`}
-                  >
+            <div
+              key={a.id}
+              className="glass-card"
+              style={{
+                padding: "1.25rem",
+                display: "flex",
+                alignItems: "flex-start",
+                justifyContent: "space-between",
+                cursor: "default",
+              }}
+            >
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.625rem" }}>
+                  <h3 style={{ fontSize: "0.9375rem", fontWeight: 500, color: "var(--text-primary)", margin: 0 }}>
+                    {a.title}
+                  </h3>
+                  <span className={`badge ${a.status === "published" ? "badge-green" : "badge-amber"}`}>
                     {a.status}
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>
                   /{a.slug} &middot; {a.views_count ?? 0} views
                 </p>
-                <p className="text-sm text-slate-600 mt-1 line-clamp-2">{a.content}</p>
+                <p
+                  style={{
+                    fontSize: "0.8125rem",
+                    color: "var(--text-secondary)",
+                    marginTop: "0.5rem",
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {a.content}
+                </p>
               </div>
-              <div className="flex gap-2 ml-4 shrink-0">
-                <button onClick={() => setEditingId(a.id)} className="text-blue-600 text-xs hover:underline">
-                  Edit
+              <div style={{ display: "flex", gap: "0.25rem", marginLeft: "1rem", flexShrink: 0 }}>
+                <button className="btn btn-ghost btn-sm" onClick={() => setEditingId(a.id)} title="Edit">
+                  <Edit2 size={14} />
                 </button>
                 <button
-                  onClick={() => updateMut.mutate({ id: a.id, status: a.status === "draft" ? "published" : "draft" })}
-                  className="text-amber-600 text-xs hover:underline"
+                  className="btn btn-ghost btn-sm"
+                  onClick={() =>
+                    updateMut.mutate({ id: a.id, status: a.status === "draft" ? "published" : "draft" })
+                  }
+                  title={a.status === "draft" ? "Publish" : "Unpublish"}
                 >
-                  {a.status === "draft" ? "Publish" : "Unpublish"}
+                  {a.status === "draft" ? <Eye size={14} /> : <EyeOff size={14} />}
                 </button>
-                <button onClick={() => deleteMut.mutate(a.id)} className="text-red-600 text-xs hover:underline">
-                  Delete
+                <button
+                  className="btn btn-ghost btn-sm"
+                  onClick={() => deleteMut.mutate(a.id)}
+                  title="Delete"
+                  style={{ color: "var(--danger)" }}
+                >
+                  <Trash2 size={14} />
                 </button>
               </div>
             </div>
           ),
         )}
         {displayList.length === 0 && (
-          <p className="text-slate-500 text-sm">No articles found.</p>
+          <div
+            className="glass-card"
+            style={{
+              padding: "3rem",
+              textAlign: "center",
+            }}
+          >
+            <BookOpen size={40} style={{ color: "var(--text-muted)", margin: "0 auto 0.75rem" }} />
+            <p style={{ color: "var(--text-muted)", fontSize: "0.875rem" }}>No articles found.</p>
+          </div>
         )}
       </div>
     </div>
@@ -176,42 +257,54 @@ function ArticleForm({
       .replace(/(^-|-$)/g, "");
 
   return (
-    <div className="bg-white rounded shadow p-4 space-y-3">
-      <div className="grid grid-cols-2 gap-3">
-        <label className="block text-sm">
-          Title
+    <div className="glass-card" style={{ padding: "1.5rem" }}>
+      <h3 style={{ fontSize: "0.9375rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "1rem" }}>
+        {initial ? "Edit Article" : "New Article"}
+      </h3>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+        <label style={{ display: "block" }}>
+          <span style={{ fontSize: "0.75rem", fontWeight: 500, color: "var(--text-secondary)", display: "block", marginBottom: "0.375rem" }}>
+            Title
+          </span>
           <input
             value={title}
             onChange={(e) => {
               setTitle(e.target.value);
               if (!initial) setSlug(autoSlug(e.target.value));
             }}
-            className="mt-1 block w-full border rounded px-2 py-1"
+            className="input"
           />
         </label>
-        <label className="block text-sm">
-          Slug
+        <label style={{ display: "block" }}>
+          <span style={{ fontSize: "0.75rem", fontWeight: 500, color: "var(--text-secondary)", display: "block", marginBottom: "0.375rem" }}>
+            Slug
+          </span>
           <input
             value={slug}
             onChange={(e) => setSlug(e.target.value)}
-            className="mt-1 block w-full border rounded px-2 py-1 font-mono text-xs"
+            className="input"
+            style={{ fontFamily: "monospace", fontSize: "0.8125rem" }}
           />
         </label>
       </div>
-      <label className="block text-sm">
-        Content
+      <label style={{ display: "block", marginTop: "1rem" }}>
+        <span style={{ fontSize: "0.75rem", fontWeight: 500, color: "var(--text-secondary)", display: "block", marginBottom: "0.375rem" }}>
+          Content
+        </span>
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
           rows={8}
-          className="mt-1 block w-full border rounded px-2 py-1 text-sm"
+          className="input"
+          style={{ resize: "vertical" }}
         />
       </label>
-      <div className="flex items-center gap-3">
+      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginTop: "1rem" }}>
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value as "draft" | "published")}
-          className="border rounded px-2 py-1 text-sm"
+          className="input"
+          style={{ width: "auto", minWidth: "8rem" }}
         >
           <option value="draft">Draft</option>
           <option value="published">Published</option>
@@ -219,11 +312,11 @@ function ArticleForm({
         <button
           disabled={isPending || !title || !slug || !content}
           onClick={() => onSubmit({ title, slug, content, status })}
-          className="px-4 py-1.5 bg-blue-600 text-white rounded text-sm disabled:opacity-50"
+          className="btn btn-primary"
         >
           {isPending ? "Saving..." : initial ? "Update" : "Create"}
         </button>
-        <button onClick={onCancel} className="px-3 py-1.5 border rounded text-sm">
+        <button onClick={onCancel} className="btn btn-secondary">
           Cancel
         </button>
       </div>

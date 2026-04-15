@@ -1,5 +1,17 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+  Upload,
+  Link,
+  Eye,
+  Table2,
+  Play,
+} from "lucide-react";
 
 import { api } from "../lib/api";
 
@@ -95,96 +107,161 @@ export default function FreshdeskImportPage() {
     return () => clearInterval(interval);
   }, [step, jobId]);
 
+  const currentStepIndex = STEPS.findIndex((s) => s.key === step);
+
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Freshdesk Import Wizard</h1>
-        <button onClick={() => navigate("/admin/integrations")} className="text-sm text-slate-500 hover:underline">
+        <div className="flex items-center gap-3">
+          <Upload size={28} style={{ color: "var(--accent)" }} />
+          <h1 className="text-2xl font-semibold" style={{ color: "var(--text-primary)" }}>
+            Freshdesk Import Wizard
+          </h1>
+        </div>
+        <button
+          onClick={() => navigate("/admin/integrations")}
+          className="btn btn-ghost btn-sm"
+        >
+          <ArrowLeft size={14} />
           Back to Integrations
         </button>
       </div>
 
       {/* Step indicator */}
-      <div className="flex gap-1">
-        {STEPS.map((s) => (
-          <div
-            key={s.key}
-            className={`flex-1 text-center py-1.5 text-xs rounded ${
-              s.key === step
-                ? "bg-blue-600 text-white"
-                : STEPS.findIndex((x) => x.key === step) > STEPS.findIndex((x) => x.key === s.key)
-                  ? "bg-green-100 text-green-800"
-                  : "bg-slate-100 text-slate-500"
-            }`}
-          >
-            {s.label}
-          </div>
-        ))}
+      <div className="flex gap-1.5">
+        {STEPS.map((s) => {
+          const stepIndex = STEPS.findIndex((x) => x.key === s.key);
+          const isActive = s.key === step;
+          const isCompleted = currentStepIndex > stepIndex;
+          const isPending = currentStepIndex < stepIndex;
+
+          let stepStyle: React.CSSProperties = {};
+          let className = "flex-1 text-center py-2 text-xs font-medium rounded-lg transition-all duration-200";
+
+          if (isActive) {
+            stepStyle = {
+              background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
+              color: "white",
+              boxShadow: "0 2px 8px rgba(59, 130, 246, 0.3)",
+            };
+          } else if (isCompleted) {
+            className += " badge-green";
+          } else if (isPending) {
+            stepStyle = {
+              background: "var(--bg-elevated)",
+              color: "var(--text-muted)",
+            };
+          }
+
+          return (
+            <div key={s.key} className={className} style={stepStyle}>
+              {isCompleted && <CheckCircle2 size={12} className="inline mr-1" />}
+              {s.label}
+            </div>
+          );
+        })}
       </div>
 
-      {error && <p className="text-red-600 text-sm bg-red-50 p-2 rounded">{error}</p>}
+      {error && (
+        <div
+          className="flex items-center gap-2 text-sm p-3 rounded-lg"
+          style={{
+            background: "rgba(239, 68, 68, 0.1)",
+            border: "1px solid rgba(239, 68, 68, 0.25)",
+            color: "var(--danger)",
+          }}
+        >
+          <AlertCircle size={16} />
+          {error}
+        </div>
+      )}
 
       {/* Step 1: Connect */}
       {step === "connect" && (
-        <div className="space-y-3 bg-white p-5 rounded shadow">
-          <h2 className="font-medium">Connect to Freshdesk</h2>
-          <p className="text-sm text-slate-600">
+        <div className="glass-card p-6 space-y-4">
+          <div className="flex items-center gap-2">
+            <Link size={18} style={{ color: "var(--accent)" }} />
+            <h2 className="font-medium" style={{ color: "var(--text-primary)" }}>
+              Connect to Freshdesk
+            </h2>
+          </div>
+          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
             Enter your Freshdesk domain and API key. Find your API key under Profile Settings in Freshdesk.
           </p>
-          <div className="grid grid-cols-2 gap-3">
-            <label className="block text-sm">
+          <div className="grid grid-cols-2 gap-4">
+            <label className="block text-sm" style={{ color: "var(--text-secondary)" }}>
               Domain
               <input
                 value={domain}
                 onChange={(e) => setDomain(e.target.value)}
                 placeholder="yourcompany.freshdesk.com"
-                className="mt-1 block w-full border rounded px-2 py-1"
+                className="input mt-1.5"
               />
             </label>
-            <label className="block text-sm">
+            <label className="block text-sm" style={{ color: "var(--text-secondary)" }}>
               API Key
               <input
                 type="password"
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
-                className="mt-1 block w-full border rounded px-2 py-1"
+                placeholder="Your API key"
+                className="input mt-1.5"
               />
             </label>
           </div>
           <button
             onClick={doConnect}
             disabled={loading || !domain || !apiKey}
-            className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
+            className="btn btn-primary"
           >
-            {loading ? "Connecting..." : "Connect & Scan"}
+            {loading ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Connecting...
+              </>
+            ) : (
+              <>
+                Connect & Scan
+                <ArrowRight size={16} />
+              </>
+            )}
           </button>
         </div>
       )}
 
       {/* Step 2: Inventory */}
       {step === "inventory" && counts && (
-        <div className="space-y-3 bg-white p-5 rounded shadow">
-          <h2 className="font-medium">Inventory</h2>
-          <p className="text-sm text-slate-600">
+        <div className="glass-card p-6 space-y-4">
+          <div className="flex items-center gap-2">
+            <Table2 size={18} style={{ color: "var(--accent)" }} />
+            <h2 className="font-medium" style={{ color: "var(--text-primary)" }}>
+              Inventory
+            </h2>
+          </div>
+          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
             Found the following objects in your Freshdesk account:
           </p>
-          <table className="text-sm w-full">
-            <tbody>
-              <tr className="border-b">
-                <td className="py-1.5 text-slate-500">Tickets</td>
-                <td className="py-1.5 font-medium">{counts.tickets.toLocaleString()}</td>
-              </tr>
-              <tr className="border-b">
-                <td className="py-1.5 text-slate-500">Contacts</td>
-                <td className="py-1.5 font-medium">{counts.contacts.toLocaleString()}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div className="table-wrapper">
+            <table>
+              <tbody>
+                <tr>
+                  <td style={{ color: "var(--text-secondary)" }}>Tickets</td>
+                  <td className="font-medium">{counts.tickets.toLocaleString()}</td>
+                </tr>
+                <tr>
+                  <td style={{ color: "var(--text-secondary)" }}>Contacts</td>
+                  <td className="font-medium">{counts.contacts.toLocaleString()}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
           <div className="flex gap-2">
-            <button onClick={() => setStep("mapping")} className="px-4 py-2 bg-blue-600 text-white rounded">
+            <button onClick={() => setStep("mapping")} className="btn btn-primary">
               Next: Map Fields
+              <ArrowRight size={16} />
             </button>
-            <button onClick={() => setStep("connect")} className="px-4 py-2 border rounded text-sm">
+            <button onClick={() => setStep("connect")} className="btn btn-secondary">
+              <ArrowLeft size={16} />
               Back
             </button>
           </div>
@@ -193,47 +270,70 @@ export default function FreshdeskImportPage() {
 
       {/* Step 3: Mapping */}
       {step === "mapping" && (
-        <div className="space-y-3 bg-white p-5 rounded shadow">
-          <h2 className="font-medium">Field Mapping</h2>
-          <p className="text-sm text-slate-600">
+        <div className="glass-card p-6 space-y-4">
+          <div className="flex items-center gap-2">
+            <Table2 size={18} style={{ color: "var(--accent)" }} />
+            <h2 className="font-medium" style={{ color: "var(--text-primary)" }}>
+              Field Mapping
+            </h2>
+          </div>
+          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
             The default mapping imports tickets and contacts with automatic status and priority
             conversion. Custom field mapping is available in Phase 2.
           </p>
-          <table className="text-sm w-full">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="text-left px-2 py-1">Freshdesk</th>
-                <th className="text-left px-2 py-1">CRM</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="border-b">
-                <td className="px-2 py-1">Status 2 (Open)</td>
-                <td className="px-2 py-1">open</td>
-              </tr>
-              <tr className="border-b">
-                <td className="px-2 py-1">Status 3 (Pending)</td>
-                <td className="px-2 py-1">pending</td>
-              </tr>
-              <tr className="border-b">
-                <td className="px-2 py-1">Status 4 (Resolved)</td>
-                <td className="px-2 py-1">resolved</td>
-              </tr>
-              <tr className="border-b">
-                <td className="px-2 py-1">Status 5 (Closed)</td>
-                <td className="px-2 py-1">closed</td>
-              </tr>
-              <tr className="border-b">
-                <td className="px-2 py-1">Priority 1–4</td>
-                <td className="px-2 py-1">low / medium / high / urgent</td>
-              </tr>
-            </tbody>
-          </table>
+          <div className="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Freshdesk</th>
+                  <th>CRM</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Status 2 (Open)</td>
+                  <td><span className="badge badge-blue">open</span></td>
+                </tr>
+                <tr>
+                  <td>Status 3 (Pending)</td>
+                  <td><span className="badge badge-amber">pending</span></td>
+                </tr>
+                <tr>
+                  <td>Status 4 (Resolved)</td>
+                  <td><span className="badge badge-green">resolved</span></td>
+                </tr>
+                <tr>
+                  <td>Status 5 (Closed)</td>
+                  <td><span className="badge badge-slate">closed</span></td>
+                </tr>
+                <tr>
+                  <td>Priority 1-4</td>
+                  <td>
+                    <span className="badge badge-slate">low</span>{" "}
+                    <span className="badge badge-blue">medium</span>{" "}
+                    <span className="badge badge-amber">high</span>{" "}
+                    <span className="badge badge-red">urgent</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
           <div className="flex gap-2">
-            <button onClick={doPreview} disabled={loading} className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50">
-              {loading ? "Loading Preview..." : "Next: Preview"}
+            <button onClick={doPreview} disabled={loading} className="btn btn-primary">
+              {loading ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Loading Preview...
+                </>
+              ) : (
+                <>
+                  Next: Preview
+                  <ArrowRight size={16} />
+                </>
+              )}
             </button>
-            <button onClick={() => setStep("inventory")} className="px-4 py-2 border rounded text-sm">
+            <button onClick={() => setStep("inventory")} className="btn btn-secondary">
+              <ArrowLeft size={16} />
               Back
             </button>
           </div>
@@ -242,29 +342,39 @@ export default function FreshdeskImportPage() {
 
       {/* Step 4: Preview */}
       {step === "preview" && previewData && (
-        <div className="space-y-3 bg-white p-5 rounded shadow">
-          <h2 className="font-medium">Preview</h2>
-          <p className="text-sm text-slate-600">
+        <div className="glass-card p-6 space-y-4">
+          <div className="flex items-center gap-2">
+            <Eye size={18} style={{ color: "var(--accent)" }} />
+            <h2 className="font-medium" style={{ color: "var(--text-primary)" }}>
+              Preview
+            </h2>
+          </div>
+          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
             Sample records that will be imported. Verify the data looks correct before proceeding.
           </p>
           {previewData.tickets.length > 0 && (
             <div>
-              <h3 className="text-sm font-medium mb-1">Sample Tickets</h3>
-              <div className="overflow-x-auto">
-                <table className="text-xs w-full border">
-                  <thead className="bg-slate-50">
+              <h3
+                className="text-sm font-medium mb-2"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                Sample Tickets
+              </h3>
+              <div className="table-wrapper">
+                <table>
+                  <thead>
                     <tr>
-                      <th className="text-left px-2 py-1">Subject</th>
-                      <th className="text-left px-2 py-1">Status</th>
-                      <th className="text-left px-2 py-1">Priority</th>
+                      <th>Subject</th>
+                      <th>Status</th>
+                      <th>Priority</th>
                     </tr>
                   </thead>
                   <tbody>
                     {previewData.tickets.map((t: any, i: number) => (
-                      <tr key={i} className="border-t">
-                        <td className="px-2 py-1">{t.subject}</td>
-                        <td className="px-2 py-1">{t.status}</td>
-                        <td className="px-2 py-1">{t.priority}</td>
+                      <tr key={i}>
+                        <td>{t.subject}</td>
+                        <td>{t.status}</td>
+                        <td>{t.priority}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -274,22 +384,27 @@ export default function FreshdeskImportPage() {
           )}
           {previewData.contacts.length > 0 && (
             <div>
-              <h3 className="text-sm font-medium mb-1">Sample Contacts</h3>
-              <div className="overflow-x-auto">
-                <table className="text-xs w-full border">
-                  <thead className="bg-slate-50">
+              <h3
+                className="text-sm font-medium mb-2"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                Sample Contacts
+              </h3>
+              <div className="table-wrapper">
+                <table>
+                  <thead>
                     <tr>
-                      <th className="text-left px-2 py-1">Name</th>
-                      <th className="text-left px-2 py-1">Email</th>
-                      <th className="text-left px-2 py-1">Company</th>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Company</th>
                     </tr>
                   </thead>
                   <tbody>
                     {previewData.contacts.map((c: any, i: number) => (
-                      <tr key={i} className="border-t">
-                        <td className="px-2 py-1">{c.name}</td>
-                        <td className="px-2 py-1">{c.email}</td>
-                        <td className="px-2 py-1">{c.company_name ?? c.company ?? ""}</td>
+                      <tr key={i}>
+                        <td>{c.name}</td>
+                        <td>{c.email}</td>
+                        <td>{c.company_name ?? c.company ?? ""}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -301,11 +416,27 @@ export default function FreshdeskImportPage() {
             <button
               onClick={doStart}
               disabled={loading}
-              className="px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
+              className="btn"
+              style={{
+                background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                color: "white",
+                boxShadow: "0 2px 8px rgba(16, 185, 129, 0.3)",
+              }}
             >
-              {loading ? "Starting..." : "Start Import"}
+              {loading ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Starting...
+                </>
+              ) : (
+                <>
+                  <Play size={16} />
+                  Start Import
+                </>
+              )}
             </button>
-            <button onClick={() => setStep("mapping")} className="px-4 py-2 border rounded text-sm">
+            <button onClick={() => setStep("mapping")} className="btn btn-secondary">
+              <ArrowLeft size={16} />
               Back
             </button>
           </div>
@@ -314,51 +445,97 @@ export default function FreshdeskImportPage() {
 
       {/* Step 5: Running */}
       {step === "running" && (
-        <div className="space-y-3 bg-white p-5 rounded shadow">
-          <h2 className="font-medium">Importing...</h2>
-          <p className="text-sm text-slate-600">
-            Stage: <span className="font-medium">{jobStatus?.stage ?? "starting"}</span>
+        <div className="glass-card p-6 space-y-4">
+          <div className="flex items-center gap-2">
+            <Loader2 size={18} className="animate-spin" style={{ color: "var(--accent)" }} />
+            <h2 className="font-medium" style={{ color: "var(--text-primary)" }}>
+              Importing...
+            </h2>
+          </div>
+          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+            Stage: <span className="font-medium" style={{ color: "var(--text-primary)" }}>{jobStatus?.stage ?? "starting"}</span>
           </p>
-          <div className="w-full bg-slate-200 rounded h-4">
+          <div
+            className="w-full overflow-hidden"
+            style={{
+              height: "1.25rem",
+              borderRadius: "0.625rem",
+              background: "var(--bg-elevated)",
+            }}
+          >
             <div
-              className="bg-blue-600 h-4 rounded transition-all duration-300"
-              style={{ width: `${jobStatus?.progress ?? 0}%` }}
+              style={{
+                height: "100%",
+                width: `${jobStatus?.progress ?? 0}%`,
+                background: "linear-gradient(90deg, #3b82f6, #60a5fa, #3b82f6)",
+                backgroundSize: "200% 100%",
+                borderRadius: "0.625rem",
+                transition: "width 0.3s ease",
+                animation: "shimmer 2s linear infinite",
+              }}
             />
           </div>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs" style={{ color: "var(--text-muted)" }}>
             Contacts: {jobStatus?.imported_contacts ?? 0} | Tickets: {jobStatus?.imported_tickets ?? 0}
           </p>
+          <style>{`@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
         </div>
       )}
 
       {/* Step 6: Done */}
       {step === "done" && (
-        <div className="space-y-3 bg-white p-5 rounded shadow">
-          <h2 className="font-medium">
-            {jobStatus?.stage === "error" ? "Import Failed" : "Import Complete"}
-          </h2>
-          {jobStatus?.stage === "error" && (
-            <p className="text-red-600 text-sm">{jobStatus?.errors?.join(", ")}</p>
-          )}
-          {jobStatus?.stage === "done" && (
+        <div className="glass-card p-6 space-y-4">
+          {jobStatus?.stage === "error" ? (
             <>
-              <p className="text-sm text-green-700">
-                Successfully imported {jobStatus.imported_contacts} contacts and{" "}
-                {jobStatus.imported_tickets} tickets.
-              </p>
-              <p className="text-xs text-slate-500">
-                Started: {jobStatus.started_at} — Finished: {jobStatus.finished_at}
+              <div className="flex items-center gap-2">
+                <AlertCircle size={18} style={{ color: "var(--danger)" }} />
+                <h2 className="font-medium" style={{ color: "var(--danger)" }}>
+                  Import Failed
+                </h2>
+              </div>
+              <div
+                className="text-sm p-3 rounded-lg"
+                style={{
+                  background: "rgba(239, 68, 68, 0.1)",
+                  border: "1px solid rgba(239, 68, 68, 0.25)",
+                  color: "var(--danger)",
+                }}
+              >
+                {jobStatus?.errors?.join(", ")}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 size={18} style={{ color: "var(--success)" }} />
+                <h2 className="font-medium" style={{ color: "var(--text-primary)" }}>
+                  Import Complete
+                </h2>
+              </div>
+              <div
+                className="text-sm p-3 rounded-lg"
+                style={{
+                  background: "rgba(16, 185, 129, 0.1)",
+                  border: "1px solid rgba(16, 185, 129, 0.25)",
+                  color: "var(--success)",
+                }}
+              >
+                Successfully imported {jobStatus?.imported_contacts} contacts and{" "}
+                {jobStatus?.imported_tickets} tickets.
+              </div>
+              <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                Started: {jobStatus?.started_at} -- Finished: {jobStatus?.finished_at}
               </p>
             </>
           )}
           <div className="flex gap-2">
-            <button onClick={() => navigate("/tickets")} className="px-4 py-2 bg-blue-600 text-white rounded">
+            <button onClick={() => navigate("/tickets")} className="btn btn-primary">
               View Tickets
             </button>
-            <button onClick={() => navigate("/contacts")} className="px-4 py-2 border rounded text-sm">
+            <button onClick={() => navigate("/contacts")} className="btn btn-secondary">
               View Contacts
             </button>
-            <button onClick={() => navigate("/admin/integrations")} className="px-4 py-2 border rounded text-sm">
+            <button onClick={() => navigate("/admin/integrations")} className="btn btn-secondary">
               Back to Integrations
             </button>
           </div>

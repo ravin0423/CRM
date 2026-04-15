@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { Plus, Zap, Edit2, Trash2, X } from "lucide-react";
 
 import { api } from "../lib/api";
 
@@ -105,136 +106,234 @@ export default function WorkflowsPage() {
     }
   }
 
-  if (isLoading) return <p>Loading workflows...</p>;
+  if (isLoading)
+    return (
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}>
+        <div style={{ color: "var(--text-muted)", fontSize: "0.875rem" }}>Loading workflows...</div>
+      </div>
+    );
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold">Workflow Automation</h1>
+    <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+          <div
+            style={{
+              width: "2.5rem",
+              height: "2.5rem",
+              borderRadius: "0.75rem",
+              background: "rgba(139, 92, 246, 0.15)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Zap size={20} style={{ color: "#a78bfa" }} />
+          </div>
+          <div>
+            <h1 style={{ fontSize: "1.5rem", fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>
+              Workflow Automation
+            </h1>
+            <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: 0 }}>
+              {workflows.length} workflow{workflows.length !== 1 ? "s" : ""}
+            </p>
+          </div>
+        </div>
         <button
-          onClick={() => { resetForm(); setShowForm(!showForm); }}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          onClick={() => {
+            resetForm();
+            setShowForm(!showForm);
+          }}
+          className={showForm ? "btn btn-secondary" : "btn btn-primary"}
         >
-          {showForm ? "Cancel" : "New Workflow"}
+          {showForm ? (
+            <>
+              <X size={16} />
+              Cancel
+            </>
+          ) : (
+            <>
+              <Plus size={16} />
+              New Workflow
+            </>
+          )}
         </button>
       </div>
 
+      {/* Form */}
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-white rounded shadow p-4 space-y-4">
-          <h2 className="font-medium">{editId ? "Edit Workflow" : "Create Workflow"}</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="glass-card" style={{ padding: "1.5rem" }}>
+          <h2 style={{ fontSize: "0.9375rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "1.25rem" }}>
+            {editId ? "Edit Workflow" : "Create Workflow"}
+          </h2>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
             <div>
-              <label className="block text-sm font-medium mb-1">Name</label>
+              <label
+                style={{
+                  display: "block",
+                  fontSize: "0.75rem",
+                  fontWeight: 500,
+                  color: "var(--text-secondary)",
+                  marginBottom: "0.375rem",
+                }}
+              >
+                Name
+              </label>
               <input
-                className="border rounded px-3 py-2 w-full"
+                className="input"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Trigger Type</label>
+              <label
+                style={{
+                  display: "block",
+                  fontSize: "0.75rem",
+                  fontWeight: 500,
+                  color: "var(--text-secondary)",
+                  marginBottom: "0.375rem",
+                }}
+              >
+                Trigger Type
+              </label>
               <select
-                className="border rounded px-3 py-2 w-full"
+                className="input"
                 value={form.trigger_type}
                 onChange={(e) => setForm({ ...form, trigger_type: e.target.value })}
               >
                 {TRIGGER_TYPES.map((t) => (
-                  <option key={t} value={t}>{t}</option>
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
                 ))}
               </select>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginTop: "1rem" }}>
             <div>
-              <label className="block text-sm font-medium mb-1">Conditions (JSON)</label>
+              <label
+                style={{
+                  display: "block",
+                  fontSize: "0.75rem",
+                  fontWeight: 500,
+                  color: "var(--text-secondary)",
+                  marginBottom: "0.375rem",
+                }}
+              >
+                Conditions (JSON)
+              </label>
               <textarea
-                className="border rounded px-3 py-2 w-full font-mono text-sm"
+                className="input"
+                style={{ fontFamily: "monospace", fontSize: "0.8125rem", resize: "vertical" }}
                 rows={4}
                 value={form.conditions}
                 onChange={(e) => setForm({ ...form, conditions: e.target.value })}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Actions (JSON)</label>
+              <label
+                style={{
+                  display: "block",
+                  fontSize: "0.75rem",
+                  fontWeight: 500,
+                  color: "var(--text-secondary)",
+                  marginBottom: "0.375rem",
+                }}
+              >
+                Actions (JSON)
+              </label>
               <textarea
-                className="border rounded px-3 py-2 w-full font-mono text-sm"
+                className="input"
+                style={{ fontFamily: "monospace", fontSize: "0.8125rem", resize: "vertical" }}
                 rows={4}
                 value={form.actions}
                 onChange={(e) => setForm({ ...form, actions: e.target.value })}
               />
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "1rem" }}>
             <input
               type="checkbox"
               checked={form.enabled}
               onChange={(e) => setForm({ ...form, enabled: e.target.checked })}
               id="wf-enabled"
+              style={{ accentColor: "var(--accent)" }}
             />
-            <label htmlFor="wf-enabled" className="text-sm">Enabled</label>
+            <label htmlFor="wf-enabled" style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
+              Enabled
+            </label>
           </div>
-          <button
-            type="submit"
-            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-            disabled={createMut.isPending || updateMut.isPending}
-          >
-            {editId ? "Update" : "Create"}
-          </button>
+          <div style={{ marginTop: "1.25rem" }}>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={createMut.isPending || updateMut.isPending}
+            >
+              {editId ? "Update" : "Create"}
+            </button>
+          </div>
         </form>
       )}
 
+      {/* Table */}
       {workflows.length === 0 ? (
-        <p className="text-slate-500">No workflows configured yet.</p>
+        <div
+          className="glass-card"
+          style={{ padding: "3rem", textAlign: "center" }}
+        >
+          <Zap size={40} style={{ color: "var(--text-muted)", margin: "0 auto 0.75rem" }} />
+          <p style={{ color: "var(--text-muted)", fontSize: "0.875rem" }}>No workflows configured yet.</p>
+        </div>
       ) : (
-        <div className="bg-white rounded shadow overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-left">
+        <div className="table-wrapper">
+          <table>
+            <thead>
               <tr>
-                <th className="px-4 py-2">Name</th>
-                <th className="px-4 py-2">Trigger</th>
-                <th className="px-4 py-2">Status</th>
-                <th className="px-4 py-2 text-right">Actions</th>
+                <th>Name</th>
+                <th>Trigger</th>
+                <th>Status</th>
+                <th style={{ textAlign: "right" }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {workflows.map((w) => (
-                <tr key={w.id} className="border-t hover:bg-slate-50">
-                  <td className="px-4 py-2 font-medium">{w.name}</td>
-                  <td className="px-4 py-2">
-                    <span className="bg-slate-100 text-slate-700 text-xs px-2 py-0.5 rounded font-mono">
+                <tr key={w.id}>
+                  <td style={{ fontWeight: 500 }}>{w.name}</td>
+                  <td>
+                    <span className="badge badge-blue" style={{ fontFamily: "monospace" }}>
                       {w.trigger_type}
                     </span>
                   </td>
-                  <td className="px-4 py-2">
+                  <td>
                     <button
                       onClick={() => toggleMut.mutate({ id: w.id, enabled: !w.enabled })}
-                      className={`text-xs px-2 py-0.5 rounded ${
-                        w.enabled
-                          ? "bg-green-100 text-green-700"
-                          : "bg-slate-100 text-slate-500"
-                      }`}
+                      className={`badge ${w.enabled ? "badge-green" : "badge-slate"}`}
+                      style={{ cursor: "pointer", border: "none", background: undefined }}
                     >
                       {w.enabled ? "Active" : "Disabled"}
                     </button>
                   </td>
-                  <td className="px-4 py-2 text-right space-x-2">
-                    <button
-                      onClick={() => startEdit(w)}
-                      className="text-blue-600 hover:underline text-xs"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (confirm(`Delete workflow "${w.name}"?`)) {
-                          deleteMut.mutate(w.id);
-                        }
-                      }}
-                      className="text-red-600 hover:underline text-xs"
-                    >
-                      Delete
-                    </button>
+                  <td style={{ textAlign: "right" }}>
+                    <div style={{ display: "inline-flex", gap: "0.25rem" }}>
+                      <button className="btn btn-ghost btn-sm" onClick={() => startEdit(w)} title="Edit">
+                        <Edit2 size={14} />
+                      </button>
+                      <button
+                        className="btn btn-ghost btn-sm"
+                        onClick={() => {
+                          if (confirm(`Delete workflow "${w.name}"?`)) {
+                            deleteMut.mutate(w.id);
+                          }
+                        }}
+                        title="Delete"
+                        style={{ color: "var(--danger)" }}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

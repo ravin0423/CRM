@@ -1,5 +1,6 @@
 import { FormEvent, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Plus, X, Loader2, Users, UserPlus, UserCircle } from "lucide-react";
 
 import { api } from "../lib/api";
 
@@ -22,7 +23,8 @@ export default function ContactsPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: async (body: Partial<Contact>) => (await api().post("/contacts", body)).data,
+    mutationFn: async (body: Partial<Contact>) =>
+      (await api().post("/contacts", body)).data,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["contacts"] });
       setShowNew(false);
@@ -30,55 +32,172 @@ export default function ContactsPage() {
   });
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-semibold">Contacts</h1>
+    <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+      {/* Header */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+          <div
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 10,
+              background: "linear-gradient(135deg, var(--accent), #6366f1)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Users size={20} color="#fff" />
+          </div>
+          <div>
+            <h1
+              style={{
+                fontSize: "1.5rem",
+                fontWeight: 700,
+                color: "var(--text-primary)",
+                margin: 0,
+              }}
+            >
+              Contacts
+            </h1>
+            <p
+              style={{
+                fontSize: "0.85rem",
+                color: "var(--text-muted)",
+                margin: 0,
+              }}
+            >
+              {contacts.length} total contact{contacts.length !== 1 ? "s" : ""}
+            </p>
+          </div>
+        </div>
         <button
-          className="px-3 py-1 bg-blue-600 text-white rounded"
+          className={showNew ? "btn btn-secondary" : "btn btn-primary"}
           onClick={() => setShowNew((s) => !s)}
+          style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
         >
-          {showNew ? "Cancel" : "+ New Contact"}
+          {showNew ? (
+            <>
+              <X size={16} /> Cancel
+            </>
+          ) : (
+            <>
+              <Plus size={16} /> New Contact
+            </>
+          )}
         </button>
       </div>
 
+      {/* New contact form */}
       {showNew && <NewContactForm onSubmit={(v) => createMutation.mutate(v)} />}
 
+      {/* Loading state */}
       {isLoading ? (
-        <p>Loading…</p>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "3rem",
+            color: "var(--text-muted)",
+            gap: "0.75rem",
+          }}
+        >
+          <Loader2
+            size={20}
+            style={{ animation: "spin 1s linear infinite" }}
+          />
+          <span>Loading contacts...</span>
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        </div>
       ) : (
-        <table className="w-full bg-white rounded shadow text-sm">
-          <thead className="bg-slate-100 text-left">
-            <tr>
-              <th className="px-3 py-2">Name</th>
-              <th className="px-3 py-2">Email</th>
-              <th className="px-3 py-2">Company</th>
-              <th className="px-3 py-2">Phone</th>
-            </tr>
-          </thead>
-          <tbody>
-            {contacts.map((c) => (
-              <tr key={c.id} className="border-t">
-                <td className="px-3 py-2">{c.name ?? "—"}</td>
-                <td className="px-3 py-2">{c.email}</td>
-                <td className="px-3 py-2">{c.company ?? "—"}</td>
-                <td className="px-3 py-2">{c.phone ?? "—"}</td>
-              </tr>
-            ))}
-            {contacts.length === 0 && (
+        <div className="table-wrapper">
+          <table>
+            <thead>
               <tr>
-                <td className="px-3 py-4 text-slate-500" colSpan={4}>
-                  No contacts yet.
-                </td>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Company</th>
+                <th>Phone</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {contacts.map((c) => (
+                <tr key={c.id}>
+                  <td>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                      }}
+                    >
+                      <UserCircle
+                        size={20}
+                        style={{ color: "var(--text-muted)", flexShrink: 0 }}
+                      />
+                      <span
+                        style={{
+                          color: "var(--text-primary)",
+                          fontWeight: 500,
+                        }}
+                      >
+                        {c.name ?? "—"}
+                      </span>
+                    </div>
+                  </td>
+                  <td style={{ color: "var(--text-secondary)" }}>{c.email}</td>
+                  <td style={{ color: "var(--text-secondary)" }}>
+                    {c.company ?? "—"}
+                  </td>
+                  <td style={{ color: "var(--text-secondary)" }}>
+                    {c.phone ?? "—"}
+                  </td>
+                </tr>
+              ))}
+              {contacts.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={4}
+                    style={{
+                      textAlign: "center",
+                      padding: "2.5rem 1rem",
+                      color: "var(--text-muted)",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        gap: "0.75rem",
+                      }}
+                    >
+                      <Users size={28} style={{ opacity: 0.4 }} />
+                      <span>No contacts yet. Add one to get started.</span>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
 }
 
-function NewContactForm({ onSubmit }: { onSubmit: (v: Partial<Contact>) => void }) {
+function NewContactForm({
+  onSubmit,
+}: {
+  onSubmit: (v: Partial<Contact>) => void;
+}) {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [company, setCompany] = useState("");
@@ -90,36 +209,62 @@ function NewContactForm({ onSubmit }: { onSubmit: (v: Partial<Contact>) => void 
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded shadow p-4 mb-4 space-y-2 max-w-xl">
+    <form
+      onSubmit={handleSubmit}
+      className="glass-card"
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "0.75rem",
+        maxWidth: 560,
+      }}
+    >
+      <h3
+        style={{
+          margin: 0,
+          fontSize: "1rem",
+          fontWeight: 600,
+          color: "var(--text-primary)",
+        }}
+      >
+        Add New Contact
+      </h3>
       <input
         required
         type="email"
         placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        className="w-full border rounded px-2 py-1"
+        className="input"
       />
       <input
         placeholder="Name"
         value={name}
         onChange={(e) => setName(e.target.value)}
-        className="w-full border rounded px-2 py-1"
+        className="input"
       />
       <input
         placeholder="Company"
         value={company}
         onChange={(e) => setCompany(e.target.value)}
-        className="w-full border rounded px-2 py-1"
+        className="input"
       />
       <input
         placeholder="Phone"
         value={phone}
         onChange={(e) => setPhone(e.target.value)}
-        className="w-full border rounded px-2 py-1"
+        className="input"
       />
-      <button type="submit" className="px-3 py-1 bg-blue-600 text-white rounded">
-        Create
-      </button>
+      <div>
+        <button
+          type="submit"
+          className="btn btn-primary"
+          style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+        >
+          <UserPlus size={14} />
+          Create Contact
+        </button>
+      </div>
     </form>
   );
 }

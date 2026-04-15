@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { MessageCircle, Send, AlertTriangle, RotateCcw } from "lucide-react";
 
 import { api } from "../lib/api";
 
@@ -80,47 +81,138 @@ export default function ChatbotPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-7rem)]">
-      <div className="flex items-center justify-between mb-3">
-        <h1 className="text-2xl font-semibold">Support Chatbot</h1>
-        <div className="flex gap-2">
+    <div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 7rem)" }}>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+          <div
+            style={{
+              width: "2.5rem",
+              height: "2.5rem",
+              borderRadius: "0.75rem",
+              background: "rgba(59, 130, 246, 0.15)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <MessageCircle size={20} style={{ color: "var(--accent)" }} />
+          </div>
+          <div>
+            <h1 style={{ fontSize: "1.5rem", fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>
+              Support Chatbot
+            </h1>
+            {conversationId && (
+              <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", margin: 0 }}>
+                Conversation #{conversationId}
+              </p>
+            )}
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: "0.5rem" }}>
           {conversationId && (
             <button
               onClick={escalate}
               disabled={loading}
-              className="px-3 py-1 border border-amber-500 text-amber-600 rounded text-sm hover:bg-amber-50"
+              className="btn btn-secondary"
+              style={{ borderColor: "var(--warning)", color: "var(--warning)" }}
             >
+              <AlertTriangle size={14} />
               Escalate to Agent
             </button>
           )}
-          <button onClick={newChat} className="px-3 py-1 border rounded text-sm hover:bg-slate-50">
+          <button onClick={newChat} className="btn btn-secondary">
+            <RotateCcw size={14} />
             New Chat
           </button>
         </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto bg-white rounded shadow p-4 space-y-3">
+      <div
+        className="glass-card"
+        style={{
+          flex: 1,
+          overflowY: "auto",
+          padding: "1.5rem",
+          display: "flex",
+          flexDirection: "column",
+          gap: "1rem",
+        }}
+      >
         {messages.length === 0 && (
-          <p className="text-slate-400 text-sm text-center mt-8">
-            Ask a question and the chatbot will search the knowledge base for answers.
-          </p>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              flex: 1,
+              gap: "1rem",
+              padding: "3rem 0",
+            }}
+          >
+            <div
+              style={{
+                width: "4rem",
+                height: "4rem",
+                borderRadius: "50%",
+                background: "rgba(59, 130, 246, 0.1)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <MessageCircle size={28} style={{ color: "var(--accent)" }} />
+            </div>
+            <div style={{ textAlign: "center" }}>
+              <p style={{ color: "var(--text-secondary)", fontSize: "0.9375rem", fontWeight: 500, margin: 0 }}>
+                How can I help you today?
+              </p>
+              <p style={{ color: "var(--text-muted)", fontSize: "0.8125rem", marginTop: "0.375rem" }}>
+                Ask a question and the chatbot will search the knowledge base for answers.
+              </p>
+            </div>
+          </div>
         )}
         {messages.map((m, i) => (
           <div
             key={i}
-            className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
+            style={{
+              display: "flex",
+              justifyContent: m.role === "user" ? "flex-end" : "flex-start",
+            }}
           >
             <div
-              className={`max-w-[70%] rounded-lg px-3 py-2 text-sm ${
-                m.role === "user"
-                  ? "bg-blue-600 text-white"
-                  : "bg-slate-100 text-slate-800"
-              }`}
+              style={{
+                maxWidth: "70%",
+                borderRadius: m.role === "user" ? "1rem 1rem 0.25rem 1rem" : "1rem 1rem 1rem 0.25rem",
+                padding: "0.75rem 1rem",
+                fontSize: "0.875rem",
+                lineHeight: 1.6,
+                ...(m.role === "user"
+                  ? {
+                      background: "linear-gradient(135deg, #3b82f6, #2563eb)",
+                      color: "#ffffff",
+                    }
+                  : {
+                      background: "var(--bg-elevated)",
+                      color: "var(--text-primary)",
+                      border: "1px solid var(--border-color)",
+                    }),
+              }}
             >
-              <p className="whitespace-pre-wrap">{m.content}</p>
+              <p style={{ whiteSpace: "pre-wrap", margin: 0 }}>{m.content}</p>
               {m.sources && m.sources.length > 0 && (
-                <div className="mt-1 text-xs opacity-70">
+                <div
+                  style={{
+                    marginTop: "0.5rem",
+                    fontSize: "0.75rem",
+                    opacity: 0.7,
+                    borderTop: m.role === "user" ? "1px solid rgba(255,255,255,0.2)" : "1px solid var(--border-color)",
+                    paddingTop: "0.375rem",
+                  }}
+                >
                   Sources: {m.sources.map((s) => s.title).join(", ")}
                 </div>
               )}
@@ -128,9 +220,56 @@ export default function ChatbotPage() {
           </div>
         ))}
         {loading && (
-          <div className="flex justify-start">
-            <div className="bg-slate-100 rounded-lg px-3 py-2 text-sm text-slate-500">
-              Thinking...
+          <div style={{ display: "flex", justifyContent: "flex-start" }}>
+            <div
+              style={{
+                background: "var(--bg-elevated)",
+                border: "1px solid var(--border-color)",
+                borderRadius: "1rem 1rem 1rem 0.25rem",
+                padding: "0.75rem 1rem",
+                fontSize: "0.875rem",
+                color: "var(--text-muted)",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.25rem",
+              }}
+            >
+              Thinking
+              <span style={{ display: "inline-flex", gap: "2px", marginLeft: "2px" }}>
+                <span
+                  style={{
+                    width: "4px",
+                    height: "4px",
+                    borderRadius: "50%",
+                    background: "var(--text-muted)",
+                    animation: "pulse 1.4s ease-in-out infinite",
+                  }}
+                />
+                <span
+                  style={{
+                    width: "4px",
+                    height: "4px",
+                    borderRadius: "50%",
+                    background: "var(--text-muted)",
+                    animation: "pulse 1.4s ease-in-out 0.2s infinite",
+                  }}
+                />
+                <span
+                  style={{
+                    width: "4px",
+                    height: "4px",
+                    borderRadius: "50%",
+                    background: "var(--text-muted)",
+                    animation: "pulse 1.4s ease-in-out 0.4s infinite",
+                  }}
+                />
+              </span>
+              <style>{`
+                @keyframes pulse {
+                  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+                  40% { opacity: 1; transform: scale(1.2); }
+                }
+              `}</style>
             </div>
           </div>
         )}
@@ -138,20 +277,22 @@ export default function ChatbotPage() {
       </div>
 
       {/* Input */}
-      <div className="mt-3 flex gap-2">
+      <div style={{ marginTop: "0.75rem", display: "flex", gap: "0.5rem" }}>
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && send()}
           placeholder="Type your question..."
-          className="flex-1 border rounded px-3 py-2 text-sm"
+          className="input"
           disabled={loading}
         />
         <button
           onClick={send}
           disabled={loading || !input.trim()}
-          className="px-4 py-2 bg-blue-600 text-white rounded text-sm disabled:opacity-50"
+          className="btn btn-primary"
+          style={{ flexShrink: 0 }}
         >
+          <Send size={16} />
           Send
         </button>
       </div>

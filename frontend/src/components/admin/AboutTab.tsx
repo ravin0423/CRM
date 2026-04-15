@@ -17,21 +17,25 @@ export default function AboutTab() {
   });
 
   return (
-    <div className="space-y-5 max-w-2xl">
-      <h2 className="text-xl font-semibold">About / Help</h2>
+    <div className="space-y-5 max-w-2xl animate-fade-in">
+      <h2 className="text-xl font-semibold" style={{ color: "var(--text-primary)" }}>
+        About / Help
+      </h2>
 
-      <table className="text-sm w-full">
-        <tbody>
-          <Row label="Application" value="Internal Support CRM" />
-          <Row label="Backend Version" value={health?.version ?? "..."} />
-          <Row label="Frontend Version" value={runtimeConfig().version} />
-          <Row label="License" value="Internal Use" />
-        </tbody>
-      </table>
+      <div className="table-wrapper">
+        <table className="text-sm w-full">
+          <tbody>
+            <Row label="Application" value="Internal Support CRM" />
+            <Row label="Backend Version" value={health?.version ?? "..."} />
+            <Row label="Frontend Version" value={runtimeConfig().version} />
+            <Row label="License" value="Internal Use" />
+          </tbody>
+        </table>
+      </div>
 
       <section className="space-y-2">
-        <h3 className="font-medium">Feature Overview</h3>
-        <ul className="list-disc list-inside text-sm text-slate-700 space-y-1">
+        <h3 className="font-medium" style={{ color: "var(--text-primary)" }}>Feature Overview</h3>
+        <ul className="list-disc list-inside text-sm space-y-1" style={{ color: "var(--text-secondary)" }}>
           <li>Ticket management with state machine (open / pending / resolved / closed)</li>
           <li>Contact &amp; deal CRM with audit logging</li>
           <li>Dual database support: SQL Server Express &amp; MongoDB</li>
@@ -44,30 +48,30 @@ export default function AboutTab() {
       </section>
 
       <section className="space-y-2">
-        <h3 className="font-medium">Phase Roadmap</h3>
-        <ul className="text-sm text-slate-700 space-y-1">
+        <h3 className="font-medium" style={{ color: "var(--text-primary)" }}>Phase Roadmap</h3>
+        <ul className="text-sm space-y-1" style={{ color: "var(--text-secondary)" }}>
           <li>
-            <span className="font-medium text-green-700">Phase 1</span> — Core system: auth,
+            <span className="font-medium" style={{ color: "var(--success)" }}>Phase 1</span> — Core system: auth,
             tickets, contacts, admin panel, AWS scaffold
           </li>
           <li>
-            <span className="font-medium text-green-700">Phase 1.5</span> — User management, integrations,
-            Freshdesk import, backup/deployment tabs
+            <span className="font-medium" style={{ color: "var(--success)" }}>Phase 1.5</span> — User management,
+            integrations, Freshdesk import, backup/deployment tabs
           </li>
           <li>
-            <span className="font-medium text-slate-500">Phase 2</span> — Knowledge base, AI chatbot,
-            workflow engine, analytics dashboard
+            <span className="font-medium" style={{ color: "var(--text-muted)" }}>Phase 2</span> — Knowledge base,
+            AI chatbot, workflow engine, analytics dashboard
           </li>
           <li>
-            <span className="font-medium text-slate-500">Phase 3</span> — SLA management,
+            <span className="font-medium" style={{ color: "var(--text-muted)" }}>Phase 3</span> — SLA management,
             customer portal, mobile, multi-language
           </li>
         </ul>
       </section>
 
       <section className="space-y-2">
-        <h3 className="font-medium">Documentation</h3>
-        <p className="text-sm text-slate-600">
+        <h3 className="font-medium" style={{ color: "var(--text-primary)" }}>Documentation</h3>
+        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
           Architecture diagrams and flowcharts are in{" "}
           <code>docs/ARCHITECTURE_AND_FLOWCHARTS.md</code>. AWS deployment guide is in{" "}
           <code>deploy/aws/README.md</code>.
@@ -79,9 +83,9 @@ export default function AboutTab() {
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <tr className="border-b">
-      <td className="py-1.5 pr-4 text-slate-500">{label}</td>
-      <td className="py-1.5">{value}</td>
+    <tr style={{ borderBottom: "1px solid var(--border-color)" }}>
+      <td className="py-1.5 pr-4" style={{ color: "var(--text-muted)" }}>{label}</td>
+      <td className="py-1.5" style={{ color: "var(--text-primary)" }}>{value}</td>
     </tr>
   );
 }

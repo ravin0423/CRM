@@ -21,52 +21,57 @@ export default function DeploymentTab() {
   const env = detectEnvironment();
 
   return (
-    <div className="space-y-5 max-w-2xl">
-      <h2 className="text-xl font-semibold">Deployment</h2>
+    <div className="space-y-5 max-w-2xl animate-fade-in">
+      <h2 className="text-xl font-semibold" style={{ color: "var(--text-primary)" }}>
+        Deployment
+      </h2>
 
       <section className="space-y-2">
-        <h3 className="font-medium">Environment</h3>
-        <table className="text-sm w-full">
-          <tbody>
-            <Row label="Mode" value={env.mode} />
-            <Row label="API Base URL" value={runtimeConfig().apiBaseUrl} />
-            <Row label="Backend Version" value={health?.version ?? "..."} />
-            <Row label="Backend Status" value={health?.status ?? "..."} />
-            <Row label="Frontend Version" value={runtimeConfig().version} />
-          </tbody>
-        </table>
+        <h3 className="font-medium" style={{ color: "var(--text-primary)" }}>Environment</h3>
+        <div className="table-wrapper">
+          <table className="text-sm w-full">
+            <tbody>
+              <Row label="Mode" value={env.mode} />
+              <Row label="API Base URL" value={runtimeConfig().apiBaseUrl} />
+              <Row label="Backend Version" value={health?.version ?? "..."} />
+              <Row label="Backend Status" value={health?.status ?? "..."} />
+              <Row label="Frontend Version" value={runtimeConfig().version} />
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <section className="space-y-2">
-        <h3 className="font-medium">Component Status</h3>
+        <h3 className="font-medium" style={{ color: "var(--text-primary)" }}>Component Status</h3>
         {health?.components ? (
-          <ul className="text-sm space-y-1">
+          <ul className="text-sm space-y-1.5">
             {Object.entries(health.components).map(([name, status]) => (
               <li key={name} className="flex items-center gap-2">
                 <span
-                  className={`inline-block w-2 h-2 rounded-full ${
-                    status === "up" ? "bg-green-500" : "bg-red-500"
-                  }`}
+                  className="inline-block w-2 h-2 rounded-full"
+                  style={{ background: status === "up" ? "var(--success)" : "var(--danger)" }}
                 />
-                <span className="font-medium">{name}</span>
-                <span className="text-slate-500">{status}</span>
+                <span className="font-medium" style={{ color: "var(--text-primary)" }}>
+                  {name}
+                </span>
+                <span style={{ color: "var(--text-muted)" }}>{status}</span>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-slate-500">Loading...</p>
+          <p className="text-sm" style={{ color: "var(--text-muted)" }}>Loading...</p>
         )}
       </section>
 
       <section className="space-y-2">
-        <h3 className="font-medium">AWS Deployment</h3>
-        <p className="text-sm text-slate-600">
+        <h3 className="font-medium" style={{ color: "var(--text-primary)" }}>AWS Deployment</h3>
+        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
           The AWS Terraform scaffold is available in <code>deploy/aws/</code>. Copy
           <code> terraform.tfvars.example</code> to <code>terraform.tfvars</code>, fill
           in your credentials, and run <code>terraform plan</code> followed by
           <code> terraform apply</code>.
         </p>
-        <p className="text-sm text-slate-600">
+        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
           See <code>deploy/aws/README.md</code> for the full bootstrap checklist and
           estimated monthly costs.
         </p>
@@ -77,9 +82,9 @@ export default function DeploymentTab() {
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <tr className="border-b">
-      <td className="py-1.5 pr-4 text-slate-500">{label}</td>
-      <td className="py-1.5 font-mono text-sm">{value}</td>
+    <tr style={{ borderBottom: "1px solid var(--border-color)" }}>
+      <td className="py-1.5 pr-4" style={{ color: "var(--text-muted)" }}>{label}</td>
+      <td className="py-1.5 font-mono text-sm" style={{ color: "var(--text-primary)" }}>{value}</td>
     </tr>
   );
 }

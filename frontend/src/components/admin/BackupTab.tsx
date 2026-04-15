@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Play, Save, CheckCircle2, XCircle } from "lucide-react";
 
 import { useAdminSettings, useUpdateAdminSettings } from "../../hooks/useAdminSettings";
 import { api } from "../../lib/api";
@@ -39,25 +40,30 @@ export default function BackupTab() {
       const res = await api().post("/admin/settings/backup/now");
       setBackupStatus(`Backup completed: ${(res.data as any)?.file ?? "ok"}`);
     } catch (err: any) {
-      setBackupStatus(
-        `Backup failed: ${err?.response?.data?.detail ?? err.message}`,
-      );
+      setBackupStatus(`Backup failed: ${err?.response?.data?.detail ?? err.message}`);
     } finally {
       setIsRunning(false);
     }
   };
 
+  const isFailed = backupStatus?.includes("failed");
+
   return (
-    <div className="space-y-5 max-w-2xl">
-      <h2 className="text-xl font-semibold">Backup &amp; Recovery</h2>
+    <div className="space-y-5 max-w-2xl animate-fade-in">
+      <h2 className="text-xl font-semibold" style={{ color: "var(--text-primary)" }}>
+        Backup &amp; Recovery
+      </h2>
 
       <div className="grid grid-cols-2 gap-4">
         <label className="block text-sm">
-          Schedule
+          <span style={{ color: "var(--text-secondary)" }}>Schedule</span>
           <select
             value={schedule}
-            onChange={(e) => { setSchedule(e.target.value); setSaved(false); }}
-            className="mt-1 block w-full border rounded px-2 py-1"
+            onChange={(e) => {
+              setSchedule(e.target.value);
+              setSaved(false);
+            }}
+            className="input mt-1"
           >
             <option value="hourly">Hourly</option>
             <option value="daily">Daily</option>
@@ -67,11 +73,14 @@ export default function BackupTab() {
         </label>
 
         <label className="block text-sm">
-          Location
+          <span style={{ color: "var(--text-secondary)" }}>Location</span>
           <select
             value={location}
-            onChange={(e) => { setLocation(e.target.value); setSaved(false); }}
-            className="mt-1 block w-full border rounded px-2 py-1"
+            onChange={(e) => {
+              setLocation(e.target.value);
+              setSaved(false);
+            }}
+            className="input mt-1"
           >
             <option value="local">Local filesystem</option>
             <option value="s3">Amazon S3</option>
@@ -79,50 +88,55 @@ export default function BackupTab() {
         </label>
 
         <label className="block text-sm">
-          Retention (days)
+          <span style={{ color: "var(--text-secondary)" }}>Retention (days)</span>
           <input
             type="number"
             min={1}
             value={retentionDays}
-            onChange={(e) => { setRetentionDays(Number(e.target.value)); setSaved(false); }}
-            className="mt-1 block w-full border rounded px-2 py-1"
+            onChange={(e) => {
+              setRetentionDays(Number(e.target.value));
+              setSaved(false);
+            }}
+            className="input mt-1"
           />
         </label>
 
         {location === "s3" && (
           <label className="block text-sm">
-            S3 Bucket
+            <span style={{ color: "var(--text-secondary)" }}>S3 Bucket</span>
             <input
               value={s3Bucket}
-              onChange={(e) => { setS3Bucket(e.target.value); setSaved(false); }}
+              onChange={(e) => {
+                setS3Bucket(e.target.value);
+                setSaved(false);
+              }}
               placeholder="my-crm-backups"
-              className="mt-1 block w-full border rounded px-2 py-1"
+              className="input mt-1"
             />
           </label>
         )}
       </div>
 
       <div className="flex items-center gap-3">
-        <button
-          onClick={save}
-          disabled={updateMut.isPending}
-          className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
-        >
-          {updateMut.isPending ? "Saving..." : "Save"}
+        <button onClick={save} disabled={updateMut.isPending} className="btn btn-primary">
+          <Save size={14} /> {updateMut.isPending ? "Saving..." : "Save"}
         </button>
-        <button
-          onClick={runBackupNow}
-          disabled={isRunning}
-          className="px-4 py-2 border border-blue-600 text-blue-600 rounded disabled:opacity-50"
-        >
-          {isRunning ? "Running..." : "Backup Now"}
+        <button onClick={runBackupNow} disabled={isRunning} className="btn btn-secondary">
+          <Play size={14} /> {isRunning ? "Running..." : "Backup Now"}
         </button>
-        {saved && <span className="text-green-600 text-sm">Saved</span>}
+        {saved && (
+          <span className="text-sm flex items-center gap-1" style={{ color: "var(--success)" }}>
+            <CheckCircle2 size={14} /> Saved
+          </span>
+        )}
       </div>
 
       {backupStatus && (
-        <p className={`text-sm ${backupStatus.includes("failed") ? "text-red-600" : "text-green-600"}`}>
-          {backupStatus}
+        <p
+          className="text-sm flex items-center gap-2"
+          style={{ color: isFailed ? "var(--danger)" : "var(--success)" }}
+        >
+          {isFailed ? <XCircle size={14} /> : <CheckCircle2 size={14} />} {backupStatus}
         </p>
       )}
     </div>

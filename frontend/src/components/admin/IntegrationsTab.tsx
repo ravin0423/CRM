@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Puzzle, CheckCircle } from "lucide-react";
 
 import { useAdminSettings, useUpdateAdminSettings } from "../../hooks/useAdminSettings";
 
@@ -35,109 +36,126 @@ export default function IntegrationsTab() {
 
   return (
     <div className="space-y-6 max-w-2xl">
-      <h2 className="text-xl font-semibold">Integrations</h2>
+      <div className="flex items-center gap-3">
+        <div style={{ background: "var(--accent)", opacity: 0.15 }} className="p-2 rounded-lg">
+          <Puzzle size={20} style={{ color: "var(--accent)" }} />
+        </div>
+        <h2 style={{ color: "var(--text-primary)" }} className="text-xl font-semibold">
+          Integrations
+        </h2>
+      </div>
 
       {/* Freshdesk */}
-      <section className="space-y-2">
-        <h3 className="font-medium">Freshdesk Import</h3>
-        <p className="text-sm text-slate-600">
+      <div className="glass-card p-5 space-y-3">
+        <h3 style={{ color: "var(--text-primary)" }} className="font-medium">
+          Freshdesk Import
+        </h3>
+        <p className="text-sm" style={{ color: "var(--text-muted)" }}>
           Enter your Freshdesk domain and API key, then launch the Import Wizard to migrate
           tickets, contacts, and custom fields.
         </p>
         <div className="grid grid-cols-2 gap-3">
           <label className="block text-sm">
-            Domain
+            <span style={{ color: "var(--text-secondary)" }}>Domain</span>
             <input
               value={freshdeskDomain}
               onChange={(e) => { setFreshdeskDomain(e.target.value); setSaved(false); }}
               placeholder="yourcompany.freshdesk.com"
-              className="mt-1 block w-full border rounded px-2 py-1"
+              className="input mt-1 w-full"
             />
           </label>
           <label className="block text-sm">
-            API Key
+            <span style={{ color: "var(--text-secondary)" }}>API Key</span>
             <input
               value={freshdeskKey}
               onChange={(e) => { setFreshdeskKey(e.target.value); setSaved(false); }}
               type="password"
-              className="mt-1 block w-full border rounded px-2 py-1"
+              className="input mt-1 w-full"
             />
           </label>
         </div>
         <button
           onClick={() => navigate("/freshdesk-import")}
           disabled={!freshdeskDomain || !freshdeskKey}
-          className="mt-1 px-3 py-1 bg-blue-600 text-white rounded text-sm disabled:opacity-50"
+          className="btn btn-primary btn-sm disabled:opacity-50"
         >
           Start Import Wizard
         </button>
-      </section>
+      </div>
 
       {/* Slack */}
-      <section className="space-y-2">
-        <h3 className="font-medium">Slack Notifications</h3>
-        <p className="text-sm text-slate-600">
+      <div className="glass-card p-5 space-y-3">
+        <h3 style={{ color: "var(--text-primary)" }} className="font-medium">
+          Slack Notifications
+        </h3>
+        <p className="text-sm" style={{ color: "var(--text-muted)" }}>
           Post ticket events (created, resolved, escalated) to a Slack channel.
         </p>
         <div className="grid grid-cols-2 gap-3">
           <label className="block text-sm">
-            Bot Token
+            <span style={{ color: "var(--text-secondary)" }}>Bot Token</span>
             <input
               value={slackToken}
               onChange={(e) => { setSlackToken(e.target.value); setSaved(false); }}
               type="password"
               placeholder="xoxb-..."
-              className="mt-1 block w-full border rounded px-2 py-1"
+              className="input mt-1 w-full"
             />
           </label>
           <label className="block text-sm">
-            Channel
+            <span style={{ color: "var(--text-secondary)" }}>Channel</span>
             <input
               value={slackChannel}
               onChange={(e) => { setSlackChannel(e.target.value); setSaved(false); }}
               placeholder="#support-alerts"
-              className="mt-1 block w-full border rounded px-2 py-1"
+              className="input mt-1 w-full"
             />
           </label>
         </div>
-      </section>
+      </div>
 
       {/* Outbound Webhook */}
-      <section className="space-y-2">
-        <h3 className="font-medium">Outbound Webhook</h3>
-        <p className="text-sm text-slate-600">
+      <div className="glass-card p-5 space-y-3">
+        <h3 style={{ color: "var(--text-primary)" }} className="font-medium">
+          Outbound Webhook
+        </h3>
+        <p className="text-sm" style={{ color: "var(--text-muted)" }}>
           POST JSON payloads to an external URL when selected events occur.
         </p>
         <div className="grid grid-cols-2 gap-3">
           <label className="block text-sm">
-            URL
+            <span style={{ color: "var(--text-secondary)" }}>URL</span>
             <input
               value={webhookUrl}
               onChange={(e) => { setWebhookUrl(e.target.value); setSaved(false); }}
               placeholder="https://hooks.example.com/crm"
-              className="mt-1 block w-full border rounded px-2 py-1"
+              className="input mt-1 w-full"
             />
           </label>
           <label className="block text-sm">
-            Events (comma-separated)
+            <span style={{ color: "var(--text-secondary)" }}>Events (comma-separated)</span>
             <input
               value={webhookEvents}
               onChange={(e) => { setWebhookEvents(e.target.value); setSaved(false); }}
-              className="mt-1 block w-full border rounded px-2 py-1"
+              className="input mt-1 w-full"
             />
           </label>
         </div>
-      </section>
+      </div>
 
       <div className="flex items-center gap-3">
         <button
           onClick={save}
           disabled={updateMut.isPending}
-          className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
+          className="btn btn-primary disabled:opacity-50"
         >
           {updateMut.isPending ? "Saving..." : "Save Integrations"}
         </button>
-        {saved && <span className="text-green-600 text-sm">Saved</span>}
+        {saved && (
+          <span className="flex items-center gap-1 text-sm" style={{ color: "var(--success)" }}>
+            <CheckCircle size={14} /> Saved
+          </span>
+        )}
       </div>
     </div>
   );
