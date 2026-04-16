@@ -1,6 +1,5 @@
 {
-  "_comment": "Runtime configuration served to the frontend. Written by the backend from admin_settings.json. Do not hardcode API URLs in source.",
-  "apiBaseUrl": "http://localhost:8000/api/v1",
+  "apiBaseUrl": "/api/v1",
   "appName": "Internal Support CRM",
-  "version": "1.0.0-dev"
+  "version": "1.0.0"
 }
