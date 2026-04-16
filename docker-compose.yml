@@ -111,11 +111,11 @@ services:
       - ./config:/app/config
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 15s
+      test: ["CMD", "curl", "-sf", "http://localhost:8000/health"]
+      interval: 10s
       timeout: 5s
-      retries: 3
-      start_period: 30s
+      retries: 12
+      start_period: 45s
 
   worker:
     build: ./backend

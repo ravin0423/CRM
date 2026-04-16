@@ -1,7 +1,6 @@
 # Local development overrides.
-# This file is automatically loaded by `docker compose up` alongside
-# docker-compose.yml. It mounts source code for hot-reload and uses
-# dev-mode settings. Do NOT use this file in production.
+# Usage:  docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+# This file is NOT auto-loaded (renamed from docker-compose.override.yml).
 
 services:
   backend:
