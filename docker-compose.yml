@@ -99,8 +99,7 @@ services:
         condition: service_healthy
     environment:
       CRM_CONFIG_PATH: /app/config/admin_settings.json
-      CRM_BOOTSTRAP_DB: postgres
-      CRM_BOOTSTRAP_POSTGRES_URL: postgresql://crm:crm_change_me@postgres:5432/crm_meta
+      CRM_BOOTSTRAP_DB: sqlserver
       CRM_ENV: production
       CRM_LOG_LEVEL: INFO
       CRM_CORS_ORIGINS: http://localhost:3000,http://localhost

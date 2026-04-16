@@ -11,6 +11,7 @@ class DatabaseFactory:
     def build(cfg: DatabaseConfig) -> DatabaseInterface:
         if cfg.type == "mongodb":
             return MongoDatabase(cfg.mongodb)
-        if cfg.type == "sqlserver":
-            return SQLServerDatabase(cfg.sqlserver)
-        raise ValueError(f"Unknown database type: {cfg.type}")
+        # "sqlserver" is also the fallback for sqlite/postgres/unknown types,
+        # because SQLServerDatabase gracefully falls back to an in-process
+        # SQLite database when no SQL Server connection details are configured.
+        return SQLServerDatabase(cfg.sqlserver)

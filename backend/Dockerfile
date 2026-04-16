@@ -29,6 +29,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+# Entrypoint auto-creates config if missing
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+ENTRYPOINT ["/docker-entrypoint.sh"]
+
 EXPOSE 8000
 
 # Production: no --reload, 4 workers, graceful shutdown
