@@ -14,9 +14,13 @@ async def bootstrap_first_run(db: DatabaseInterface, config: AppConfig) -> None:
     """
     user_count = await db.users.count()
     if user_count == 0:
-        await db.users.create_admin(
-            email="admin@company.com",
-            name="Administrator",
-            password="password123",
-            must_change_password=True,
-        )
+        try:
+            await db.users.create_admin(
+                email="admin@company.com",
+                name="Administrator",
+                password="password123",
+                must_change_password=True,
+            )
+        except Exception:
+            # Another worker may have already seeded the admin user
+            pass
