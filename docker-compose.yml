@@ -1,5 +1,3 @@
-version: "3.9"
-
 # One-command local stack for Internal Support CRM.
 # All service credentials below are DEFAULTS ONLY — the operator is expected
 # to change them in the Admin Panel on first login. No secrets are baked into

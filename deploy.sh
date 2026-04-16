@@ -31,7 +31,7 @@ fail()  { echo -e "  ${RED}✗${NC} $1"; }
 TOTAL_STEPS=8
 APP_DIR="/opt/crm"
 REPO_URL="https://github.com/ravin0423/CRM.git"
-BRANCH="main"
+BRANCH="claude/execute-prompt-docs-rBNtz"
 
 # ──────────────────────────────────────────────────
 # Pre-flight
@@ -104,8 +104,11 @@ else
     echo "  Installing Docker..."
     case "$OS" in
         ubuntu|debian)
-            # Remove old versions
-            apt-get remove -y -qq docker docker-engine docker.io containerd runc 2>/dev/null || true
+            # Remove ALL old/conflicting Docker & containerd packages
+            for pkg in docker docker-engine docker.io containerd containerd.io runc podman-docker; do
+                apt-get remove -y -qq "$pkg" 2>/dev/null || true
+            done
+            apt-get autoremove -y -qq 2>/dev/null || true
             install_pkg lsb-release
             install -m 0755 -d /etc/apt/keyrings
             curl -fsSL "https://download.docker.com/linux/$OS/gpg" | gpg --dearmor -o /etc/apt/keyrings/docker.gpg 2>/dev/null
