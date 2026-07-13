@@ -1,0 +1,14 @@
+{
+  "name": "community-plugin-local-preview",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local stand-in for the SureMDM console, for exercising CommunityPlugin/script.js without a real SureMDM account",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

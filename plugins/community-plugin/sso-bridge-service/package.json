@@ -1,5 +1,5 @@
 {
-  "name": "community-plugin-server",
+  "name": "community-plugin-sso-bridge",
   "version": "1.0.0",
   "private": true,
   "description": "SSO token-exchange backend for the 42Gears Community SureMDM plugin",
