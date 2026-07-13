@@ -57,3 +57,4 @@ deploy/aws/.terraform.lock.hcl
 # Build artifacts
 build/
 *.tar.gz
+plugins/*/SureMDM-packed-Plugins/

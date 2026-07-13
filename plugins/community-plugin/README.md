@@ -2,7 +2,7 @@
 
 Embeds the 42Gears Community forum (`community.42gears.com`) inside the
 SureMDM console as a real SPDK plugin, so users don't have to open a
-separate browser tab and log in again to ask questions or read discussions.
+separate browser tab to reach it.
 
 This was built and verified against the actual **SureMDM Plugin Development
 Kit (SPDK)** CLI (`npm install spdk -g`) — `spdk validate` and `spdk pack`
@@ -10,6 +10,15 @@ both pass against the `SureMDM-Plugins/apps/CommunityPlugin/` folder here.
 The one thing not verifiable from this environment is how it renders inside
 a *real* SureMDM console (no live account was available) — see "Open
 questions" below.
+
+## Current phase: direct embed, manual login
+
+`script.js` currently just points an iframe at `https://community.42gears.com/`
+and lets the user log in normally inside it — **no SSO auto-login yet**. This
+is intentional for the first round of manual testing on a real account.
+`sso-bridge-service/` (Discourse SSO handoff, so users land already logged
+in) is built and working standalone, but the shipped plugin doesn't call it
+yet — see "Phase 2" below for wiring it back in.
 
 ## Layout
 
@@ -19,12 +28,12 @@ plugins/community-plugin/
 │   ├── manifest.json                        {name, description, version} — SPDK's full schema
 │   ├── index.html
 │   ├── style.css
-│   └── script.js
-├── sso-bridge-service/                      companion backend, deployed separately — NOT part of the spdk package
+│   └── script.js                            embeds community.42gears.com directly, no SSO yet
+├── sso-bridge-service/                      Phase 2: SSO auto-login backend — not currently called by script.js
 │   ├── src/server.js                        POST /api/plugin/sso-url
 │   ├── src/verifyAccount.js                 verifies the account server-to-server before minting SSO
-│   └── src/ssoProvider.js                   Discourse-protocol adapter (default) + JWT alternative
-└── local-preview/                           stands in for the SureMDM console for local testing only
+│   └── src/ssoProvider.js                   Discourse-protocol adapter (confirmed correct platform)
+└── local-preview/                           test harness for the Phase 2 SSO flow only
 ```
 
 ## How it actually works (per the SPDK docs + CLI source)
@@ -43,15 +52,9 @@ plugins/community-plugin/
    plain relative URL and it works — meaning the console must render a
    plugin's HTML/JS inside its own document/origin (not as a foreign-origin
    iframe pointed at your dev server), so relative API calls hit the real
-   SureMDM backend using the browser's existing session. That response
-   includes `Name`, `ApiKey`, and `CustomerID` for the logged-in account.
+   SureMDM backend using the browser's existing session.
 4. `spdk validate <name>` / `spdk pack <name>` check/zip the plugin folder
    for submission to `techsupport@42gears.com`.
-
-This plugin's `script.js` follows the same convention: it calls
-`../api/Account`, then hands `{name, apiKey, customerId}` to the companion
-`sso-bridge-service` to get a signed, pre-authenticated redirect into
-Community, then points an iframe at it.
 
 ## Prerequisite: Community must allow being framed
 
@@ -63,9 +66,11 @@ Content-Security-Policy: frame-ancestors https://<your-suremdm-console-domain>
 ```
 
 No amount of plugin code can override a `frame-ancestors` refusal — that's a
-change 42Gears' Community platform admins have to make. If it can't be
-arranged, this plugin still degrades to a pre-authenticated "open in a new
-tab" link rather than failing outright (see below).
+change 42Gears' Community platform (Discourse) admins have to make. If it
+can't be arranged, this plugin still degrades to a pre-authenticated "open
+in a new tab" link rather than failing outright (see below). **This is the
+main thing to check first in your manual test** — if the iframe stays blank
+or shows a refusal, this is almost certainly why.
 
 Also: **a blocked/refused iframe navigation still fires the browser's
 `load` event** — JS cannot reliably tell "Community loaded" apart from
@@ -73,49 +78,18 @@ Also: **a blocked/refused iframe navigation still fires the browser's
 a small persistent "Not seeing Community load above? Open in a new tab"
 banner visible once the iframe attempt starts, rather than trying to
 silently detect success/failure. Verified in local testing: with the iframe
-target unreachable, the fallback banner correctly appears with the same
-pre-authenticated SSO URL.
+target unreachable, the fallback banner correctly appears.
 
 ## Open questions (need a real SureMDM account/console to confirm)
 
 - Whether the console literally injects returned html/js/css into its own
   DOM, uses a sandboxed `srcdoc` iframe same-origin trick, or something
-  else — this changes nothing about `script.js` itself, but affects exactly
-  which console origin(s) to allow-list on both `ALLOWED_HOST_ORIGINS` here
-  and Community's `frame-ancestors`.
-- Whether `../api/Account` includes an email field (used here as
-  `data.Email` via the bridge's own server-to-server call, not from the
-  client response directly).
-- Which platform `community.42gears.com` actually runs — `ssoProvider.js`
-  defaults to Discourse's DiscourseConnect protocol as the most common
-  standards-based guess; swap in the real one if different.
-- The exact SureMDM public REST API contract for server-to-server account
-  verification (`verifyAccount.js`'s `SUREMDM_ACCOUNT_VERIFY_PATH`).
+  else — affects which console origin(s) Discourse needs to allow-list in
+  `frame-ancestors`.
+- Whether Discourse's default CSP already blocks framing (likely, by
+  default) and what admin setting relaxes it for this specific origin.
 
-## Setup
-
-### 1. Companion SSO-bridge service
-
-```bash
-cd sso-bridge-service
-npm install
-cp .env.example .env   # fill in real values
-npm start
-```
-
-| Var | Purpose |
-|---|---|
-| `ALLOWED_HOST_ORIGINS` | The real SureMDM console origin(s) |
-| `SUREMDM_API_BASE` / `SUREMDM_ACCOUNT_VERIFY_PATH` | Where to verify an ApiKey/CustomerID pair |
-| `COMMUNITY_BASE_URL` | `https://community.42gears.com` |
-| `SSO_PROVIDER` | `discourse` (default) or `jwt` — see `src/ssoProvider.js` |
-| `DISCOURSE_SSO_SECRET` | Shared secret from the Community platform's SSO settings |
-| `DEV_MOCK_ACCOUNT` | `true` only for local dev |
-
-Edit `SureMDM-Plugins/apps/CommunityPlugin/script.js`'s `SSO_BRIDGE_URL`
-constant to point at wherever this service is actually deployed.
-
-### 2. Package and submit the plugin
+## Setup — testing this build
 
 ```bash
 npm install -g spdk
@@ -124,37 +98,32 @@ spdk validate CommunityPlugin
 spdk pack CommunityPlugin        # → SureMDM-packed-Plugins/CommunityPlugin.zip
 ```
 
-Email the zip to `techsupport@42gears.com` for review/approval, per the SPDK
-docs, then it becomes installable from the SureMDM Plugin Store.
+Per the SPDK docs, the documented test path is `spdk host [port]` +
+**Settings → Account Settings → Plugins → Developer Settings → Local Plugin
+Url** pointed at that host, then open it from **More → Apps Plugin**. The
+docs describe emailing the packed zip to `techsupport@42gears.com` for
+store review, not a self-serve console upload — if your console does offer
+a direct upload option, that's new information worth feeding back into this
+README.
 
-## Local development / demo
+## Phase 2: re-enabling SSO auto-login
 
-No real SureMDM account needed to exercise the SSO-bridge + fallback logic:
+Once manual embedding is confirmed working:
 
-```bash
-# terminal 1 — SSO bridge
-cd sso-bridge-service && cp .env.example .env
-sed -i 's/DEV_MOCK_ACCOUNT=false/DEV_MOCK_ACCOUNT=true/' .env
-npm install && npm start
+1. Deploy `sso-bridge-service/` somewhere reachable from the console origin
+   and set its `.env` (`COMMUNITY_BASE_URL`, `DISCOURSE_SSO_SECRET` from
+   Discourse's admin SSO settings, `ALLOWED_HOST_ORIGINS`).
+2. In `script.js`, replace the direct `COMMUNITY_URL` assignment with a call
+   to `POST {bridge-url}/api/plugin/sso-url` (this code already exists in
+   git history from the previous iteration — reintroduce the `getAccount()`
+   / `getCommunitySsoUrl()` pair calling `../api/Account` first) and use the
+   returned `url` for the iframe.
+3. Re-run `spdk validate` / `spdk pack`.
 
-# terminal 2 — stand-in for the console (mocks ../api/Account)
-cd local-preview && npm install && npm start
-```
+`local-preview/` mocks `../api/Account` at the right relative path
+specifically for testing this phase without a live SureMDM account.
 
-Then open `http://localhost:8788/preview/CommunityPlugin/index.html`.
-
-To test against a *real* SureMDM account instead:
-
-```bash
-cd plugins/community-plugin
-spdk host 3000
-```
-
-...then in SureMDM: Settings → Account Settings → Plugins → Developer
-Settings → enable Developer Tool → Local Plugin Url →
-`http://localhost:3000` → Save → More → Apps Plugin.
-
-## Security notes
+## Security notes (apply once Phase 2 is wired back in)
 
 - The bridge never trusts identity the client claims — it independently
   re-verifies `{apiKey, customerId}` against SureMDM's own API before

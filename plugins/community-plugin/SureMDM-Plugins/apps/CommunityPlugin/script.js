@@ -1,12 +1,10 @@
 (function () {
   "use strict";
 
-  // Companion SSO-bridge service (see ../../../sso-bridge-service). It is
-  // deployed separately — spdk pack only ships this plugin folder — so this
-  // must point at wherever that service is actually hosted.
-  var SSO_BRIDGE_URL = "http://localhost:8787";
-
-  var API_URL = "../api/";
+  // Phase 1: embed Community directly and let the user log in inside the
+  // frame themselves. SSO auto-login (via ../../../sso-bridge-service) is a
+  // later enhancement, deferred for now.
+  var COMMUNITY_URL = "https://community.42gears.com/";
   var IFRAME_LOAD_TIMEOUT_MS = 6000;
 
   var app = document.getElementById("app");
@@ -59,41 +57,5 @@
     frame.src = url;
   }
 
-  function getAccount() {
-    return fetch(API_URL + "Account")
-      .then(function (res) {
-        if (!res.ok) throw new Error("Could not read the current SureMDM account.");
-        return res.json();
-      });
-  }
-
-  function getCommunitySsoUrl(account) {
-    return fetch(SSO_BRIDGE_URL + "/api/plugin/sso-url", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: account.Name,
-        apiKey: account.ApiKey,
-        customerId: account.CustomerID,
-      }),
-    }).then(function (res) {
-      if (!res.ok) {
-        return res.json().catch(function () { return {}; }).then(function (body) {
-          throw new Error(body.error || "Backend returned " + res.status);
-        });
-      }
-      return res.json();
-    });
-  }
-
-  getAccount()
-    .then(function (account) {
-      return getCommunitySsoUrl(account);
-    })
-    .then(function (result) {
-      showFrame(result.url);
-    })
-    .catch(function (err) {
-      showError(err.message || "Something went wrong while connecting to Community.");
-    });
+  showFrame(COMMUNITY_URL);
 })();
