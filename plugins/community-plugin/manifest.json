@@ -1,0 +1,23 @@
+{
+  "id": "com.42gears.suremdm.plugin.community",
+  "name": "42Gears Community",
+  "version": "1.0.0",
+  "vendor": "42Gears Mobility Systems Pvt. Ltd.",
+  "description": "Access the 42Gears Community forum (community.42gears.com) directly inside the SureMDM console — browse discussions, ask questions, and get product updates without leaving your workspace.",
+  "icon": "public/icon.svg",
+  "entry": "public/index.html",
+  "category": "Support & Community",
+  "displayLocation": "console.sidebar",
+  "permissions": [
+    "session.read",
+    "user.read",
+    "theme.read"
+  ],
+  "sso": {
+    "required": true,
+    "provider": "community-sso-backend"
+  },
+  "minConsoleVersion": "TBD - confirm against live SPDK manifest schema",
+  "supportUrl": "https://community.42gears.com/",
+  "_notice": "Field names/shape are best-effort based on common plugin-manifest conventions; developer.42gears.com/suremdm/plugins/ was unreachable from this environment (network policy blocks 42gears.com). Validate every key here against the real SPDK manifest schema before submitting to the plugin catalog."
+}

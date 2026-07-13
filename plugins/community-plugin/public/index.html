@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>42Gears Community</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app" class="state-loading">
+    <div class="panel loading-panel">
+      <div class="spinner" aria-hidden="true"></div>
+      <p>Connecting to 42Gears Community…</p>
+    </div>
+
+    <div class="panel error-panel" hidden>
+      <h2>Couldn't open Community here</h2>
+      <p class="error-message"></p>
+      <a class="btn btn-primary" target="_blank" rel="noopener" href="https://community.42gears.com/">
+        Open Community in a new tab
+      </a>
+    </div>
+
+    <div class="frame-container" hidden>
+      <iframe
+        class="community-frame"
+        title="42Gears Community"
+        referrerpolicy="strict-origin-when-cross-origin"
+        sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+      ></iframe>
+      <a class="fallback-banner" target="_blank" rel="noopener" href="https://community.42gears.com/">
+        Not seeing Community load above? Open in a new tab →
+      </a>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="plugin.js"></script>
+</body>
+</html>
