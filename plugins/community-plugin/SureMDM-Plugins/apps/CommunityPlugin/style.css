@@ -1,14 +1,17 @@
 :root {
-  /* Placeholder brand palette — swap for 42gears.com's exact values once
-     confirmed; every color used below routes through these variables so
-     that's a one-place edit. */
-  --brand-primary: #0a66c2;
-  --brand-primary-dark: #084d94;
+  /* Sampled from a 42gears.com screenshot: bright blue wordmark/links,
+     deep navy CTA button + hero background, pale blue-tinted section
+     backgrounds. Close visual match, not exact hex from brand guidelines —
+     replace with official values if 42Gears provides them. */
+  --brand-primary: #1b5fc1;
+  --brand-primary-dark: #154a99;
+  --brand-navy: #0a1e3f;
+  --brand-navy-dark: #071429;
   --brand-bg: #ffffff;
-  --brand-surface: #f6f8fa;
-  --brand-text: #1a1a1a;
+  --brand-surface: #eaf1fb;
+  --brand-text: #0a1e3f;
   --brand-text-muted: #5b6472;
-  --brand-border: #e2e6ea;
+  --brand-border: #dbe6f3;
   --card-height: 640px;
   --card-radius: 12px;
 }
@@ -59,16 +62,16 @@ html, body {
 
 .btn {
   display: inline-block;
-  padding: 8px 18px;
-  border-radius: 6px;
+  padding: 10px 20px;
+  border-radius: 20px;
   text-decoration: none;
   font-weight: 600;
-  background: var(--brand-primary);
+  background: var(--brand-navy);
   color: #fff;
   transition: background-color 0.15s ease;
 }
 
-.btn:hover { background: var(--brand-primary-dark); }
+.btn:hover { background: var(--brand-navy-dark); }
 
 .spinner {
   width: 28px;
@@ -107,10 +110,11 @@ html, body {
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --brand-bg: #1e1e1e;
-    --brand-surface: #262626;
-    --brand-text: #eee;
-    --brand-text-muted: #b3b8bf;
-    --brand-border: #3a3a3a;
+    /* Echoes the site's dark navy hero section rather than a generic gray. */
+    --brand-bg: #0f2543;
+    --brand-surface: #0a1e3f;
+    --brand-text: #eef3fb;
+    --brand-text-muted: #a9b8ce;
+    --brand-border: #1c3762;
   }
 }
