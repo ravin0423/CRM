@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #root {
+          position: absolute; inset: 0; overflow: hidden;
+          font-family: "Montserrat", sans-serif;
+          background: #0b2f66;
+        }
+        .layer { position: absolute; inset: 0; opacity: 0; }
+        .cover-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+        #layer-establish {
+          background: linear-gradient(160deg, #0b2f66, #1b5fbf 55%, #2f7fd6 100%);
+          display: flex; align-items: center; justify-content: center;
+        }
+        #layer-establish .txt {
+          font-size: 60px; font-weight: 800; color: #fff; text-align: center;
+          max-width: 1200px; opacity: 0;
+        }
+
+        #layer-lockscreen img { }
+        .focusring {
+          position: absolute; border: 3px solid #fff; border-radius: 12px; opacity: 0;
+          box-shadow: 0 0 0 6px rgba(255,255,255,0.18);
+        }
+
+        #layer-loginform {
+          background: linear-gradient(160deg, #0b2f66, #1b5fbf 55%, #2f7fd6 100%);
+        }
+        .logincard {
+          position: absolute; top: 200px; left: 700px; width: 520px;
+          box-shadow: 0 30px 70px rgba(0,0,0,0.3);
+          border-radius: 14px; overflow: hidden;
+        }
+        .logincard img { display: block; width: 100%; height: auto; }
+        .fieldring {
+          position: absolute; border: 3px solid #0077ff; border-radius: 8px; opacity: 0;
+        }
+
+        #layer-mfa img {}
+
+        #layer-checking {
+          background: #1b2530;
+          display: flex; align-items: center; justify-content: center;
+        }
+        .checking-wrap { text-align: center; }
+        .spinner {
+          width: 90px; height: 90px; border-radius: 50%;
+          border: 6px solid rgba(0,119,255,0.2); border-top-color: #0077ff;
+          margin: 0 auto 36px;
+        }
+        .checking-label {
+          font-family: "IBM Plex Mono", monospace; color: #cbd5df;
+          font-size: 24px; letter-spacing: 0.06em; margin-bottom: 30px;
+        }
+        .rulepills { display: flex; gap: 16px; justify-content: center; }
+        .rulepill {
+          font-family: "IBM Plex Mono", monospace; font-size: 18px; font-weight: 600;
+          color: #fff; background: rgba(0,119,255,0.18); border: 1.5px solid rgba(0,119,255,0.4);
+          border-radius: 100px; padding: 10px 20px; opacity: 0; transform: scale(0.6);
+        }
+
+        #layer-success {
+          background: #1b2530;
+          display: flex; align-items: center; justify-content: center;
+        }
+        .success-wrap { text-align: center; }
+        .checkcircle {
+          width: 130px; height: 130px; border-radius: 50%;
+          background: #0077ff; margin: 0 auto 34px;
+          display: flex; align-items: center; justify-content: center;
+          opacity: 0; transform: scale(0.3);
+        }
+        .checkcircle svg { width: 64px; height: 64px; }
+        .success-title { font-size: 52px; font-weight: 800; color: #fff; margin-bottom: 30px; opacity: 0; }
+        .approw { display: flex; gap: 18px; justify-content: center; }
+        .appchip {
+          font-family: "IBM Plex Mono", monospace; font-size: 20px; font-weight: 500;
+          color: #cbd5df; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
+          border-radius: 12px; padding: 16px 24px; opacity: 0; transform: translateY(14px);
+        }
+
+        .caption {
+          position: absolute; bottom: 70px; left: 0; right: 0; text-align: center;
+          font-weight: 700; font-size: 40px; color: #fff; opacity: 0;
+          text-shadow: 0 4px 24px rgba(0,0,0,0.35);
+        }
+        .cursor { position: absolute; width: 34px; height: 34px; top: -80px; left: -80px; z-index: 30; }
+        .cursor .outline, .cursor .fill { position: absolute; inset: 0;
+          clip-path: polygon(2px 1px, 2px 26px, 10px 20px, 15px 30px, 20px 27px, 15px 18px, 24px 18px); }
+        .cursor .outline { background: #1b2530; transform: scale(1.18); transform-origin: 4px 2px; }
+        .cursor .fill { background: #ffffff; }
+      </style>
+      <div id="root" data-composition-id="scene-08-walkthrough" data-width="1920" data-height="1080" data-duration="35.8">
+
+        <div class="layer" id="layer-establish">
+          <div class="txt" id="establish-txt">Here's what that looks like<br />for the person signing in.</div>
+        </div>
+
+        <div class="layer" id="layer-lockscreen">
+          <img class="cover-img" src="assets/screenshots/08-lockscreen-add-sureidp-user-tile.png" />
+          <div class="focusring" id="ring-tile" style="width:210px;height:70px;top:512px;left:1020px;"></div>
+        </div>
+
+        <div class="layer" id="layer-loginform">
+          <div class="logincard">
+            <img src="assets/screenshots/09-sureidp-login-form.png" />
+          </div>
+          <div class="fieldring" id="ring-user" style="width:480px;height:56px;top:441px;left:720px;"></div>
+          <div class="fieldring" id="ring-pass" style="width:480px;height:56px;top:521px;left:720px;"></div>
+          <div class="fieldring" id="ring-signin" style="width:480px;height:56px;top:586px;left:720px;border-radius:100px;"></div>
+        </div>
+
+        <div class="layer" id="layer-mfa">
+          <img class="cover-img" src="assets/screenshots/10-mfa-otp-prompt.png" />
+          <div class="fieldring" id="ring-otp" style="width:280px;height:60px;top:558px;left:820px;"></div>
+          <div class="fieldring" id="ring-verify" style="width:280px;height:60px;top:645px;left:820px;border-radius:100px;"></div>
+        </div>
+
+        <div class="layer" id="layer-checking">
+          <div class="checking-wrap">
+            <div class="spinner" id="spinner"></div>
+            <div class="checking-label">CHECKING DEVICE COMPLIANCE&hellip;</div>
+            <div class="rulepills">
+              <div class="rulepill" id="rp1">LOCATION &#10003;</div>
+              <div class="rulepill" id="rp2">WI&#8209;FI &#10003;</div>
+              <div class="rulepill" id="rp3">IP RANGE &#10003;</div>
+              <div class="rulepill" id="rp4">TIME &#10003;</div>
+              <div class="rulepill" id="rp5">COMPLIANCE &#10003;</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="layer" id="layer-success">
+          <div class="success-wrap">
+            <div class="checkcircle" id="checkcircle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M4 12l6 6L20 6"/></svg>
+            </div>
+            <div class="success-title" id="success-title">Signed in.</div>
+            <div class="approw">
+              <div class="appchip" id="chip1">SureMDM Agent</div>
+              <div class="appchip" id="chip2">Start Kiosk</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cursor" id="cursor"><div class="outline"></div><div class="fill"></div></div>
+        <div class="caption" id="cap-tile">A new tile appears: <b>Add SureIdP User</b>.</div>
+        <div class="caption" id="cap-login">The real SureIdP login &mdash; username and password.</div>
+        <div class="caption" id="cap-mfa">A one-time code from an authenticator app comes next.</div>
+        <div class="caption" id="cap-check">Every rule your admin set gets checked <b>right here</b>.</div>
+      </div>
+      <script>
+        window.__timelines = window.__timelines || {};
+        var tl = gsap.timeline({ paused: true });
+
+        // Beat 1 — establish (0.3 - 4.11)
+        tl.to("#layer-establish", { opacity: 1, duration: 0.3 }, 0.3);
+        tl.fromTo("#establish-txt", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.5 }, 0.4);
+        tl.to("#establish-txt", { opacity: 0, duration: 0.3 }, 3.6);
+        tl.to("#layer-establish", { opacity: 0, duration: 0.3 }, 3.85);
+
+        // Beat 2 — lock screen tile (4.11 - 6.74)
+        tl.to("#layer-lockscreen", { opacity: 1, duration: 0.35 }, 4.15);
+        tl.fromTo("#cap-tile", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.35 }, 4.4);
+        tl.fromTo("#cursor", { x: 0, y: 0, opacity: 0 }, { x: 1100, y: 545, opacity: 1, duration: 0.6, ease: "power2.out" }, 4.6);
+        tl.fromTo("#ring-tile", { opacity: 0 }, { opacity: 1, duration: 0.25 }, 5.1);
+        tl.to("#cursor", { scale: 0.85, duration: 0.07 }, 6.2);
+        tl.to("#cursor", { scale: 1, duration: 0.15, ease: "back.out(2)" }, 6.28);
+        tl.to("#cap-tile", { opacity: 0, duration: 0.25 }, 6.5);
+        tl.to(["#layer-lockscreen", "#ring-tile"], { opacity: 0, duration: 0.35 }, 6.6);
+
+        // Beat 3 — login form (6.74 - 11.12)
+        tl.to("#layer-loginform", { opacity: 1, duration: 0.35 }, 6.8);
+        tl.fromTo("#cap-login", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.35 }, 7.0);
+        tl.to("#cursor", { x: 960, y: 469, duration: 0.5, ease: "power2.inOut" }, 7.2);
+        tl.fromTo("#ring-user", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 7.7);
+        tl.to("#ring-user", { opacity: 0, duration: 0.2 }, 8.4);
+        tl.to("#cursor", { x: 960, y: 549, duration: 0.4, ease: "power2.inOut" }, 8.5);
+        tl.fromTo("#ring-pass", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 8.9);
+        tl.to("#ring-pass", { opacity: 0, duration: 0.2 }, 9.7);
+        tl.to("#cursor", { x: 960, y: 614, duration: 0.4, ease: "power2.inOut" }, 9.8);
+        tl.fromTo("#ring-signin", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 10.2);
+        tl.to("#cursor", { scale: 0.85, duration: 0.07 }, 10.7);
+        tl.to("#cursor", { scale: 1, duration: 0.15, ease: "back.out(2)" }, 10.77);
+        tl.to("#cap-login", { opacity: 0, duration: 0.25 }, 10.85);
+        tl.to(["#layer-loginform", "#ring-signin"], { opacity: 0, duration: 0.35 }, 10.95);
+
+        // Beat 4 — MFA (11.12 - 17.66)
+        tl.to("#layer-mfa", { opacity: 1, duration: 0.35 }, 11.2);
+        tl.fromTo("#cap-mfa", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.35 }, 11.4);
+        tl.to("#cursor", { x: 960, y: 589, duration: 0.5, ease: "power2.inOut" }, 11.6);
+        tl.fromTo("#ring-otp", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 12.1);
+        tl.to("#ring-otp", { opacity: 0, duration: 0.2 }, 15.5);
+        tl.to("#cursor", { x: 960, y: 675, duration: 0.4, ease: "power2.inOut" }, 15.6);
+        tl.fromTo("#ring-verify", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 16.0);
+        tl.to("#cursor", { scale: 0.85, duration: 0.07 }, 16.9);
+        tl.to("#cursor", { scale: 1, duration: 0.15, ease: "back.out(2)" }, 16.97);
+        tl.to("#cap-mfa", { opacity: 0, duration: 0.25 }, 17.1);
+        tl.to(["#layer-mfa", "#ring-verify"], { opacity: 0, duration: 0.35 }, 17.2);
+        tl.to("#cursor", { opacity: 0, duration: 0.25 }, 17.2);
+
+        // Beat 5 — checking compliance (17.66 - 26.76)
+        tl.to("#layer-checking", { opacity: 1, duration: 0.35 }, 17.7);
+        tl.fromTo("#cap-check", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.35 }, 17.9);
+        tl.to("#spinner", { rotation: 360 * 6, duration: 8.5, ease: "none" }, 17.7);
+        tl.to("#cap-check", { opacity: 0, duration: 0.25 }, 21.0);
+        tl.fromTo("#rp1", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2)" }, 21.3);
+        tl.fromTo("#rp2", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2)" }, 21.9);
+        tl.fromTo("#rp3", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2)" }, 22.5);
+        tl.fromTo("#rp4", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2)" }, 23.1);
+        tl.fromTo("#rp5", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2)" }, 23.7);
+        tl.to("#layer-checking", { opacity: 0, duration: 0.35 }, 26.4);
+
+        // Beat 6 — success (26.76 - end)
+        tl.to("#layer-success", { opacity: 1, duration: 0.4 }, 26.8);
+        tl.fromTo("#checkcircle", { opacity: 0, scale: 0.3 }, { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(2.2)" }, 27.2);
+        tl.fromTo("#success-title", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.4 }, 27.7);
+        tl.fromTo("#chip1", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.35 }, 28.2);
+        tl.fromTo("#chip2", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.35 }, 28.5);
+
+        window.__timelines["scene-08-walkthrough"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

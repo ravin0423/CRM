@@ -1,0 +1,33 @@
+# SCRIPT — SureIdP OS Login launch video
+# One line per scene. Kokoro voice: am_michael, speed 0.98.
+# Numbers pronounced as written (sixty seconds, not "60s").
+
+## scene-01-cover
+Every login screen on every managed device is a door. Right now, yours might not all agree on who's allowed through.
+
+## scene-02-problem
+Windows signs in one way. Mac OS, another. Linux, a third. Local passwords nobody resets. No shared policy. No visibility, until something goes wrong.
+
+## scene-03-solution
+SureMDM's OS Login brings every one of those logins under one identity: SureIdP. Configure it once, from the console you already use. Profiles, then OS Login.
+
+## scene-04-identity
+Turn on SureIdP, and every sign in routes through it. Offline? Credentials still work, until the expiry window you set closes, and a refresh is required. Already have a local account? SureIdP can take it over on first login, matched by name, so nothing about that user's setup is lost. And you can bind devices to the people they belong to, so only the right person ever gets in.
+
+## scene-05-branding
+Brand the login screen as your own: logo, wallpaper, a welcome message people actually read. Then give them exactly the controls they need right there. Restart, sleep, shut down, Wi-Fi. Nothing more, no ticket required for the basics.
+
+## scene-06-governance
+Decide who's even allowed to log in. Cap the number of SureIdP users per device. Hide the local accounts you don't want visible. Even the hostname is yours to define, built automatically with wildcards, device by device.
+
+## scene-07-conditional
+This is the part that makes it security, not just sign in. Set the rules: an approved location, a trusted Wi-Fi network, an IP range, a time window, overall compliance. Login only happens when every rule is met. Step outside them, and the device logs itself out within sixty seconds. No exceptions.
+
+## scene-08-walkthrough
+Here's what that looks like for the person signing in. A new tile appears: Add SureIdP User. One click opens the real SureIdP login, username and password. Turn on multi factor authentication, and a one time code from an authenticator app comes next. Every rule your admin set gets checked right here, and if the device isn't where it's supposed to be, access is denied, on the spot. Pass every check, and the desktop opens exactly as SureMDM configured it.
+
+## scene-09-crossplatform
+Windows. Mac OS. Linux. Same identity, same rules, same console. One policy that follows the device, not the operating system it happens to run.
+
+## scene-10-close
+OS Login with SureIdP Authentication. Available now in the SureMDM console, under Profiles. One login, every device, on your terms.

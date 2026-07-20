@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #root {
+          position: absolute;
+          inset: 0;
+          background: #f5f8fb;
+          overflow: hidden;
+          font-family: "Montserrat", sans-serif;
+        }
+        .eyebrow {
+          position: absolute;
+          top: 108px;
+          left: 0;
+          right: 0;
+          text-align: center;
+          font-family: "IBM Plex Mono", monospace;
+          font-size: 24px;
+          font-weight: 600;
+          letter-spacing: 0.14em;
+          color: #0062cc;
+          opacity: 0;
+        }
+        .stage {
+          position: absolute;
+          top: 240px;
+          left: 50%;
+          width: 1500px;
+          margin-left: -750px;
+        }
+        .shotcard {
+          width: 1500px;
+          border-radius: 14px;
+          border: 1px solid rgba(0,119,255,0.18);
+          box-shadow: 0 28px 70px rgba(27,37,48,0.16);
+          overflow: hidden;
+          background: #fff;
+          opacity: 0;
+          transform: scale(0.94);
+        }
+        .shotcard img { display: block; width: 100%; height: auto; }
+        .glowbehind {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 1700px;
+          height: 900px;
+          margin: -450px 0 0 -850px;
+          border-radius: 40px;
+          background: radial-gradient(ellipse, rgba(0,119,255,0.14) 0%, rgba(0,119,255,0) 70%);
+          opacity: 0;
+          z-index: -1;
+        }
+        /* focus ring — sweeps to the OS Login nav item, then to the Configure button */
+        .focusring {
+          position: absolute;
+          border: 3px solid #0077ff;
+          border-radius: 10px;
+          opacity: 0;
+          box-shadow: 0 0 0 6px rgba(0,119,255,0.14);
+        }
+        /* cursor: two stacked clip-path arrows for a faux outline */
+        .cursor {
+          position: absolute;
+          width: 34px;
+          height: 34px;
+          top: -80px;
+          left: -80px;
+          z-index: 20;
+        }
+        .cursor .outline, .cursor .fill {
+          position: absolute;
+          inset: 0;
+          clip-path: polygon(2px 1px, 2px 26px, 10px 20px, 15px 30px, 20px 27px, 15px 18px, 24px 18px);
+        }
+        .cursor .outline { background: #1b2530; transform: scale(1.18); transform-origin: 4px 2px; }
+        .cursor .fill { background: #ffffff; }
+        .clickpulse {
+          position: absolute;
+          width: 20px;
+          height: 20px;
+          margin: -10px 0 0 -10px;
+          border-radius: 50%;
+          border: 3px solid #0077ff;
+          opacity: 0;
+        }
+      </style>
+      <div id="root" data-composition-id="scene-03-solution" data-width="1920" data-height="1080" data-duration="16.3">
+        <div class="glowbehind" id="glow"></div>
+        <div class="eyebrow" id="eyebrow">ONE IDENTITY: SUREIDP</div>
+        <div class="stage">
+          <div class="shotcard" id="card">
+            <img src="assets/screenshots/01-console-os-login-menu.png" />
+          </div>
+        </div>
+        <!-- focus ring positioned over the "OS Login" nav row inside the 1500-wide scaled screenshot -->
+        <div class="focusring" id="ring-nav" style="width:170px;height:46px;top:610px;left:585px;"></div>
+        <div class="focusring" id="ring-btn" style="width:150px;height:52px;top:512px;left:1345px;"></div>
+        <div class="cursor" id="cursor">
+          <div class="outline"></div>
+          <div class="fill"></div>
+        </div>
+        <div class="clickpulse" id="pulse" style="top:538px;left:1420px;"></div>
+      </div>
+      <script>
+        window.__timelines = window.__timelines || {};
+        var tl = gsap.timeline({ paused: true });
+
+        // Surface establishes: card flies/settles in, eyebrow fades, ambient glow blooms
+        tl.fromTo("#eyebrow", { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 0.4 }, 0.3);
+        tl.fromTo("#glow", { opacity: 0 }, { opacity: 1, duration: 1.0, ease: "sine.out" }, 0.3);
+        tl.fromTo("#card", { opacity: 0, scale: 0.94 }, { opacity: 1, scale: 1, duration: 0.7, ease: "power3.out" }, 0.4);
+        tl.to("#glow", { scale: 1.05, duration: 2.4, ease: "sine.inOut", repeat: 1, yoyo: true, transformOrigin: "50% 50%" }, 1.2);
+
+        // Cursor sweeps in from off-screen to the OS Login nav item (camera-servo feel via focus ring)
+        tl.fromTo("#cursor", { x: 0, y: 0, opacity: 0 }, { x: 665, y: 706, opacity: 1, duration: 0.8, ease: "power2.out" }, 2.6);
+        tl.fromTo("#ring-nav", { opacity: 0, scale: 1.1 }, { opacity: 1, scale: 1, duration: 0.35 }, 3.3);
+        tl.to("#ring-nav", { opacity: 0, duration: 0.3 }, 5.4);
+
+        // Cursor moves down to the Configure button
+        tl.to("#cursor", { x: 1420, y: 608, duration: 0.7, ease: "power2.inOut" }, 6.8);
+        tl.fromTo("#ring-btn", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 7.4);
+
+        // Click: press-compress, ripple, ring settles solid
+        tl.to("#cursor", { scale: 0.85, duration: 0.08 }, 11.1);
+        tl.to("#cursor", { scale: 1, duration: 0.18, ease: "back.out(2)" }, 11.18);
+        tl.fromTo("#pulse", { opacity: 0.8, scale: 0.4 }, { opacity: 0, scale: 2.4, duration: 0.6, ease: "power2.out" }, 11.1);
+        tl.to("#ring-btn", { borderColor: "#1fa8a3", boxShadow: "0 0 0 6px rgba(31,168,163,0.16)", duration: 0.3 }, 11.15);
+
+        window.__timelines["scene-03-solution"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #root {
+          position: absolute;
+          inset: 0;
+          background: #f5f8fb;
+          overflow: hidden;
+          font-family: "Montserrat", sans-serif;
+        }
+        .eyebrow {
+          position: absolute;
+          top: 84px;
+          left: 0;
+          right: 0;
+          text-align: center;
+          font-family: "IBM Plex Mono", monospace;
+          font-size: 24px;
+          font-weight: 600;
+          letter-spacing: 0.14em;
+          color: #0062cc;
+          opacity: 0;
+        }
+        .card {
+          position: absolute;
+          width: 230px;
+          height: 230px;
+          border-radius: 16px;
+          background: rgba(0,119,255,0.045);
+          border: 1.5px solid rgba(0,119,255,0.18);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 16px;
+          opacity: 0;
+          transform: scale(0.7);
+        }
+        .card svg { width: 56px; height: 56px; }
+        .card .label {
+          font-size: 22px;
+          font-weight: 700;
+          color: #12161c;
+          text-align: center;
+        }
+        .closing {
+          position: absolute;
+          bottom: 66px;
+          left: 0;
+          right: 0;
+          text-align: center;
+          font-size: 34px;
+          font-weight: 700;
+          color: #5b6675;
+          opacity: 0;
+        }
+        .closing .accent { color: #0062cc; }
+      </style>
+      <div id="root" data-composition-id="scene-05-branding" data-width="1920" data-height="1080" data-duration="19.8">
+        <div class="eyebrow" id="eyebrow">BRANDING</div>
+
+        <div class="card" id="c-logo" style="top:250px;left:575px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#0077ff" stroke-width="1.6"><rect x="3" y="4" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M3 16l5-4 4 3 4-5 5 6"/></svg>
+          <div class="label">Logo</div>
+        </div>
+        <div class="card" id="c-wallpaper" style="top:250px;left:845px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#0077ff" stroke-width="1.6"><rect x="3" y="4" width="18" height="14" rx="2"/><circle cx="8" cy="9" r="1.6"/><path d="M4 15l5-5 4 4 3-3 4 4"/></svg>
+          <div class="label">Wallpaper</div>
+        </div>
+        <div class="card" id="c-message" style="top:250px;left:1115px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#0077ff" stroke-width="1.6"><path d="M4 5h16v10H9l-4 4v-4H4z"/></svg>
+          <div class="label">Welcome<br/>message</div>
+        </div>
+
+        <div class="card" id="c-restart" style="top:610px;left:440px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#0077ff" stroke-width="1.6"><path d="M20 11a8 8 0 10-2.3 5.6"/><path d="M20 5v6h-6"/></svg>
+          <div class="label">Restart</div>
+        </div>
+        <div class="card" id="c-sleep" style="top:610px;left:710px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#0077ff" stroke-width="1.6"><path d="M20 14.5A8 8 0 119.5 4a6.5 6.5 0 0010.5 10.5z"/></svg>
+          <div class="label">Sleep</div>
+        </div>
+        <div class="card" id="c-shutdown" style="top:610px;left:980px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#0077ff" stroke-width="1.6"><path d="M12 3v8"/><path d="M6.5 6.5a7.5 7.5 0 1011 0"/></svg>
+          <div class="label">Shut down</div>
+        </div>
+        <div class="card" id="c-wifi" style="top:610px;left:1250px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#0077ff" stroke-width="1.6"><path d="M3 9a15 15 0 0118 0"/><path d="M6.5 13a10 10 0 0111 0"/><path d="M10 17a4.5 4.5 0 014 0"/><circle cx="12" cy="20" r="1" fill="#0077ff"/></svg>
+          <div class="label">Wi&#8209;Fi</div>
+        </div>
+
+        <div class="closing" id="closing">Nothing more. <span class="accent">No ticket required.</span></div>
+      </div>
+      <script>
+        window.__timelines = window.__timelines || {};
+        var tl = gsap.timeline({ paused: true });
+
+        tl.fromTo("#eyebrow", { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 0.4 }, 0.2);
+
+        // Row 1 — branding cards cascade (stagger <=500ms cap)
+        tl.fromTo(["#c-logo", "#c-wallpaper", "#c-message"],
+          { opacity: 0, scale: 0.7, y: 24 },
+          { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: "back.out(1.6)", stagger: 0.15 },
+          0.5
+        );
+
+        // eyebrow swap to login screen controls
+        tl.to("#eyebrow", { opacity: 0, duration: 0.25 }, 6.9);
+        tl.set("#eyebrow", { textContent: "LOGIN SCREEN CONTROLS" }, 7.15);
+        tl.to("#eyebrow", { opacity: 1, duration: 0.3 }, 7.15);
+
+        // Row 2 — control cards cascade in two waves (restart/sleep, then shutdown/wifi)
+        tl.fromTo(["#c-restart", "#c-sleep"],
+          { opacity: 0, scale: 0.7, y: 24 },
+          { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: "back.out(1.6)", stagger: 0.15 },
+          7.4
+        );
+        tl.fromTo(["#c-shutdown", "#c-wifi"],
+          { opacity: 0, scale: 0.7, y: 24 },
+          { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: "back.out(1.6)", stagger: 0.15 },
+          11.2
+        );
+
+        tl.fromTo("#closing", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.5 }, 13.7);
+
+        window.__timelines["scene-05-branding"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

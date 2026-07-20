@@ -1,0 +1,77 @@
+{
+  "tts_provider": "kokoro",
+  "voice_id": "am_michael",
+  "bgm": null,
+  "bgm_pending": false,
+  "bgm_provider": null,
+  "bgm_pid": null,
+  "bgm_log": null,
+  "bgm_mode": null,
+  "bgm_target_duration_s": null,
+  "bgm_seed_duration_s": null,
+  "bgm_loop_count": null,
+  "voices": [
+    {
+      "id": "scene-01-cover",
+      "path": "assets/voice/scene-01-cover.wav",
+      "duration_s": 8.128,
+      "words": []
+    },
+    {
+      "id": "scene-02-problem",
+      "path": "assets/voice/scene-02-problem.wav",
+      "duration_s": 11.904,
+      "words": []
+    },
+    {
+      "id": "scene-03-solution",
+      "path": "assets/voice/scene-03-solution.wav",
+      "duration_s": 12.779,
+      "words": []
+    },
+    {
+      "id": "scene-04-identity",
+      "path": "assets/voice/scene-04-identity.wav",
+      "duration_s": 25.792,
+      "words": []
+    },
+    {
+      "id": "scene-05-branding",
+      "path": "assets/voice/scene-05-branding.wav",
+      "duration_s": 16.64,
+      "words": []
+    },
+    {
+      "id": "scene-06-governance",
+      "path": "assets/voice/scene-06-governance.wav",
+      "duration_s": 16.341,
+      "words": []
+    },
+    {
+      "id": "scene-07-conditional",
+      "path": "assets/voice/scene-07-conditional.wav",
+      "duration_s": 21.867,
+      "words": []
+    },
+    {
+      "id": "scene-08-walkthrough",
+      "path": "assets/voice/scene-08-walkthrough.wav",
+      "duration_s": 31.595,
+      "words": []
+    },
+    {
+      "id": "scene-09-crossplatform",
+      "path": "assets/voice/scene-09-crossplatform.wav",
+      "duration_s": 11.648,
+      "words": []
+    },
+    {
+      "id": "scene-10-close",
+      "path": "assets/voice/scene-10-close.wav",
+      "duration_s": 11.2,
+      "words": []
+    }
+  ],
+  "sfx": [],
+  "total_duration_s": 167.894
+}

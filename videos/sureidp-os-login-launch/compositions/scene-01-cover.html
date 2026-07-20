@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #root {
+          position: absolute;
+          inset: 0;
+          background: #f5f8fb;
+          overflow: hidden;
+          font-family: "Montserrat", sans-serif;
+        }
+        .glow {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 1400px;
+          height: 1400px;
+          margin: -700px 0 0 -700px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(0,119,255,0.10) 0%, rgba(0,119,255,0) 65%);
+        }
+        .dotgrid {
+          position: absolute;
+          inset: 0;
+          opacity: 0.05;
+          background-image: radial-gradient(circle, #0077ff 3px, transparent 3.5px);
+          background-size: 64px 64px;
+        }
+        .textwrap {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0 220px;
+        }
+        .line {
+          position: absolute;
+          left: 220px;
+          right: 220px;
+          text-align: center;
+          font-weight: 800;
+          font-size: 92px;
+          line-height: 1.15;
+          letter-spacing: -0.02em;
+          color: #12161c;
+          opacity: 0;
+        }
+        #line2 { color: #0062cc; }
+        .eyebrow {
+          position: absolute;
+          bottom: 100px;
+          left: 0;
+          right: 0;
+          text-align: center;
+          font-family: "IBM Plex Mono", monospace;
+          font-size: 22px;
+          font-weight: 600;
+          letter-spacing: 0.16em;
+          color: #0062cc;
+          opacity: 0;
+        }
+        .accentline {
+          position: absolute;
+          bottom: 156px;
+          left: 50%;
+          width: 72px;
+          height: 4px;
+          margin-left: -36px;
+          background: #0077ff;
+          border-radius: 2px;
+          opacity: 0;
+        }
+      </style>
+      <div id="root" data-composition-id="scene-01-cover" data-width="1920" data-height="1080" data-duration="11.4">
+        <div class="glow" id="glow" data-layout-allow-overflow="true"></div>
+        <div class="dotgrid"></div>
+        <div class="textwrap">
+          <div class="line" id="line1">Every login screen<br />is a door.</div>
+          <div class="line" id="line2">They don't all agree<br />on who's allowed through.</div>
+        </div>
+        <div class="accentline" id="accent"></div>
+        <div class="eyebrow" id="eyebrow">SUREMDM &middot; OS LOGIN WITH SUREIDP AUTHENTICATION</div>
+      </div>
+      <script>
+        window.__timelines = window.__timelines || {};
+        var tl = gsap.timeline({ paused: true });
+
+        // Scene 1: establish, line1 fades in with a subtle scale settle
+        tl.fromTo("#line1", { opacity: 0, scale: 0.96 }, { opacity: 1, scale: 1, duration: 0.7, ease: "power2.out" }, 0.3);
+
+        // breathing glow, finite repeats (sine-wave-loop)
+        tl.to("#glow", { scale: 1.08, duration: 2.0, ease: "sine.inOut", repeat: 5, yoyo: true, transformOrigin: "50% 50%" }, 0.3);
+
+        // Scene 3 (Benefits variant): slide-up crossfade line1 -> line2
+        tl.to("#line1", { y: -40, opacity: 0, duration: 0.55, ease: "power2.in" }, 4.0);
+        tl.fromTo("#line2", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, 4.15);
+
+        // brand identifier settles in for the hold
+        tl.fromTo("#accent", { opacity: 0, scaleX: 0 }, { opacity: 1, scaleX: 1, duration: 0.5, ease: "power2.out" }, 8.9);
+        tl.fromTo("#eyebrow", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 9.1);
+
+        window.__timelines["scene-01-cover"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

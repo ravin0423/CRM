@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="vendor/gsap.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #f5f8fb;
+      }
+      body {
+        font-family: "Montserrat", sans-serif;
+      }
+      .scene-wrap {
+        position: absolute;
+        inset: 0;
+        width: 1920px;
+        height: 1080px;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="196"
+      data-width="1920"
+      data-height="1080"
+    >
+      <!-- Scene 1 — Cover (track 1), visible by default -->
+      <div id="wrap-1" class="scene-wrap" style="opacity: 1;">
+        <div
+          id="scene-01-cover"
+          data-composition-id="scene-01-cover"
+          data-composition-src="compositions/scene-01-cover.html"
+          data-start="0"
+          data-duration="11.4"
+          data-track-index="1"
+          data-width="1920"
+          data-height="1080"
+        ></div>
+      </div>
+
+      <!-- Scene 2 — Problem (track 2) -->
+      <div id="wrap-2" class="scene-wrap" style="opacity: 0;">
+        <div
+          id="scene-02-problem"
+          data-composition-id="scene-02-problem"
+          data-composition-src="compositions/scene-02-problem.html"
+          data-start="10.6"
+          data-duration="14.3"
+          data-track-index="2"
+          data-width="1920"
+          data-height="1080"
+        ></div>
+      </div>
+
+      <!-- Scene 3 — Solution reveal (track 1) -->
+      <div id="wrap-3" class="scene-wrap" style="opacity: 0;">
+        <div
+          id="scene-03-solution"
+          data-composition-id="scene-03-solution"
+          data-composition-src="compositions/scene-03-solution.html"
+          data-start="24.1"
+          data-duration="16.3"
+          data-track-index="1"
+          data-width="1920"
+          data-height="1080"
+        ></div>
+      </div>
+
+      <!-- Scene 4 — Identity configuration (track 2) -->
+      <div id="wrap-4" class="scene-wrap" style="opacity: 0;">
+        <div
+          id="scene-04-identity"
+          data-composition-id="scene-04-identity"
+          data-composition-src="compositions/scene-04-identity.html"
+          data-start="39.6"
+          data-duration="29.3"
+          data-track-index="2"
+          data-width="1920"
+          data-height="1080"
+        ></div>
+      </div>
+
+      <!-- Scene 5 — Branding & login controls (track 1) -->
+      <div id="wrap-5" class="scene-wrap" style="opacity: 0;">
+        <div
+          id="scene-05-branding"
+          data-composition-id="scene-05-branding"
+          data-composition-src="compositions/scene-05-branding.html"
+          data-start="68.1"
+          data-duration="19.8"
+          data-track-index="1"
+          data-width="1920"
+          data-height="1080"
+        ></div>
+      </div>
+
+      <!-- Scene 6 — Access governance (track 2) -->
+      <div id="wrap-6" class="scene-wrap" style="opacity: 0;">
+        <div
+          id="scene-06-governance"
+          data-composition-id="scene-06-governance"
+          data-composition-src="compositions/scene-06-governance.html"
+          data-start="87.1"
+          data-duration="19.3"
+          data-track-index="2"
+          data-width="1920"
+          data-height="1080"
+        ></div>
+      </div>
+
+      <!-- Scene 7 — Conditional access / zero trust (track 1) -->
+      <div id="wrap-7" class="scene-wrap" style="opacity: 0;">
+        <div
+          id="scene-07-conditional"
+          data-composition-id="scene-07-conditional"
+          data-composition-src="compositions/scene-07-conditional.html"
+          data-start="105.6"
+          data-duration="26.3"
+          data-track-index="1"
+          data-width="1920"
+          data-height="1080"
+        ></div>
+      </div>
+
+      <!-- Scene 8 — End-user walkthrough (track 2) -->
+      <div id="wrap-8" class="scene-wrap" style="opacity: 0;">
+        <div
+          id="scene-08-walkthrough"
+          data-composition-id="scene-08-walkthrough"
+          data-composition-src="compositions/scene-08-walkthrough.html"
+          data-start="131.1"
+          data-duration="35.8"
+          data-track-index="2"
+          data-width="1920"
+          data-height="1080"
+        ></div>
+      </div>
+
+      <!-- Scene 9 — Cross-platform (track 1) -->
+      <div id="wrap-9" class="scene-wrap" style="opacity: 0;">
+        <div
+          id="scene-09-crossplatform"
+          data-composition-id="scene-09-crossplatform"
+          data-composition-src="compositions/scene-09-crossplatform.html"
+          data-start="166.1"
+          data-duration="14.8"
+          data-track-index="1"
+          data-width="1920"
+          data-height="1080"
+        ></div>
+      </div>
+
+      <!-- Scene 10 — Close / CTA (track 2) -->
+      <div id="wrap-10" class="scene-wrap" style="opacity: 0;">
+        <div
+          id="scene-10-close"
+          data-composition-id="scene-10-close"
+          data-composition-src="compositions/scene-10-close.html"
+          data-start="180.1"
+          data-duration="15.9"
+          data-track-index="2"
+          data-width="1920"
+          data-height="1080"
+        ></div>
+      </div>
+
+      <!-- Voiceover — track 30, one clip per scene, sequential, no overlap -->
+      <audio id="vo-1" data-start="0.5" data-duration="8.128" data-track-index="30" src="assets/voice/scene-01-cover.wav"></audio>
+      <audio id="vo-2" data-start="11.5" data-duration="11.904" data-track-index="30" src="assets/voice/scene-02-problem.wav"></audio>
+      <audio id="vo-3" data-start="25.0" data-duration="12.779" data-track-index="30" src="assets/voice/scene-03-solution.wav"></audio>
+      <audio id="vo-4" data-start="40.5" data-duration="25.792" data-track-index="30" src="assets/voice/scene-04-identity.wav"></audio>
+      <audio id="vo-5" data-start="69.0" data-duration="16.64" data-track-index="30" src="assets/voice/scene-05-branding.wav"></audio>
+      <audio id="vo-6" data-start="88.0" data-duration="16.341" data-track-index="30" src="assets/voice/scene-06-governance.wav"></audio>
+      <audio id="vo-7" data-start="106.5" data-duration="21.867" data-track-index="30" src="assets/voice/scene-07-conditional.wav"></audio>
+      <audio id="vo-8" data-start="132.0" data-duration="31.595" data-track-index="30" src="assets/voice/scene-08-walkthrough.wav"></audio>
+      <audio id="vo-9" data-start="167.0" data-duration="11.648" data-track-index="30" src="assets/voice/scene-09-crossplatform.wav"></audio>
+      <audio id="vo-10" data-start="181.0" data-duration="11.2" data-track-index="30" src="assets/voice/scene-10-close.wav"></audio>
+
+      <!-- SFX accents — track 31 -->
+      <audio id="sfx-click-3" data-start="35.2" data-duration="0.366" data-track-index="31" src=".media/audio/sfx/sfx_001.mp3"></audio>
+      <audio id="sfx-whoosh-t2" data-start="24.3" data-duration="0.575" data-track-index="31" src=".media/audio/sfx/sfx_004.mp3"></audio>
+      <audio id="sfx-click-4" data-start="41.55" data-duration="0.366" data-track-index="31" src=".media/audio/sfx/sfx_001.mp3"></audio>
+      <audio id="sfx-error-7" data-start="121.49" data-duration="1.62" data-track-index="31" src=".media/audio/sfx/sfx_002.mp3"></audio>
+      <audio id="sfx-click-8a" data-start="137.3" data-duration="0.366" data-track-index="31" src=".media/audio/sfx/sfx_001.mp3"></audio>
+      <audio id="sfx-click-8b" data-start="141.8" data-duration="0.366" data-track-index="31" src=".media/audio/sfx/sfx_001.mp3"></audio>
+      <audio id="sfx-click-8c" data-start="148.0" data-duration="0.366" data-track-index="31" src=".media/audio/sfx/sfx_001.mp3"></audio>
+      <audio id="sfx-chime-10" data-start="188.3" data-duration="2.544" data-track-index="31" src=".media/audio/sfx/sfx_003.mp3"></audio>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      const wraps = {};
+      for (let i = 1; i <= 10; i++) {
+        wraps[i] = document.getElementById("wrap-" + i);
+      }
+
+      // Standard 0.4s opacity crossfades at every boundary except 2->3
+      const boundaries = [
+        { from: 1, to: 2, at: 11.0 },
+        // 2->3 handled separately below (zoom-blur climax)
+        { from: 3, to: 4, at: 40.0 },
+        { from: 4, to: 5, at: 68.5 },
+        { from: 5, to: 6, at: 87.5 },
+        { from: 6, to: 7, at: 106.0 },
+        { from: 7, to: 8, at: 131.5 },
+        { from: 8, to: 9, at: 166.5 },
+        { from: 9, to: 10, at: 180.5 },
+      ];
+
+      boundaries.forEach(function (b) {
+        const T = b.at;
+        tl.to(wraps[b.from], { opacity: 0, duration: 0.4, ease: "power1.inOut" }, T - 0.4);
+        tl.fromTo(
+          wraps[b.to],
+          { opacity: 0 },
+          { opacity: 1, duration: 0.4, ease: "power1.inOut" },
+          T - 0.4
+        );
+      });
+
+      // 2 -> 3 climax: zoom-through + blur (the product reveal)
+      const T2 = 24.5;
+      tl.to(wraps[2], { scale: 1.2, filter: "blur(20px)", opacity: 0, duration: 0.2, ease: "power3.in", transformOrigin: "50% 50%" }, T2 - 0.2);
+      tl.fromTo(
+        wraps[3],
+        { scale: 0.85, filter: "blur(20px)", opacity: 0 },
+        { scale: 1, filter: "blur(0px)", opacity: 1, duration: 0.4, ease: "expo.out", transformOrigin: "50% 50%" },
+        T2 - 0.1
+      );
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

@@ -1,24 +1,6 @@
 {
   "version": 1,
   "skills": {
-    "captions-overlay": {
-      "source": "heygen-com/hyperframes",
-      "sourceType": "github",
-      "skillPath": ".agents/skills/captions-overlay/SKILL.md",
-      "computedHash": "3a3a1d936a1d8a11708a7765ec784831d4819fb8ede33736c3321367f94a850b"
-    },
-    "changelog-video": {
-      "source": "heygen-com/hyperframes",
-      "sourceType": "github",
-      "skillPath": ".agents/skills/changelog-video/SKILL.md",
-      "computedHash": "88d771abf7ba051531a319a1b0e51425a571120a2098d0661f6f873272ac786b"
-    },
-    "cut-the-curve": {
-      "source": "heygen-com/hyperframes",
-      "sourceType": "github",
-      "skillPath": ".agents/skills/cut-the-curve/SKILL.md",
-      "computedHash": "0dc00f155130d001cfe6f9bfcc2da2452ad92c13275564178595ec7948414154"
-    },
     "embedded-captions": {
       "source": "heygen-com/hyperframes",
       "sourceType": "github",
@@ -91,12 +73,6 @@
       "skillPath": "skills/media-use/SKILL.md",
       "computedHash": "9bf690d7719b78deb3f663f43d0743f0c1e242b27089e752ecc8b13f54ad9656"
     },
-    "motion-doctrine": {
-      "source": "heygen-com/hyperframes",
-      "sourceType": "github",
-      "skillPath": ".agents/skills/motion-doctrine/SKILL.md",
-      "computedHash": "771cfa568b9acafd4b8d733e7733f4849f2544e88c4d469799ef67fc09603025"
-    },
     "motion-graphics": {
       "source": "heygen-com/hyperframes",
       "sourceType": "github",
@@ -108,12 +84,6 @@
       "sourceType": "github",
       "skillPath": "skills/music-to-video/SKILL.md",
       "computedHash": "5f4da24ccf7c722e51af437a74c49e515cdf0f2add6756eba849e7e7d1a5b67a"
-    },
-    "oversized-cursor": {
-      "source": "heygen-com/hyperframes",
-      "sourceType": "github",
-      "skillPath": ".agents/skills/oversized-cursor/SKILL.md",
-      "computedHash": "449de00b2b6f40ba60e8626d9a8802e5481018f0a64eae3ecd3fb8ad8f4b230b"
     },
     "pr-to-video": {
       "source": "heygen-com/hyperframes",
@@ -132,12 +102,6 @@
       "sourceType": "github",
       "skillPath": "skills/remotion-to-hyperframes/SKILL.md",
       "computedHash": "9da0357826595795643f9a0993949c688e4387d66854c85841002bf7c7866024"
-    },
-    "seam-craft": {
-      "source": "heygen-com/hyperframes",
-      "sourceType": "github",
-      "skillPath": ".agents/skills/seam-craft/SKILL.md",
-      "computedHash": "7469e9113cec2fbf345c22a23145a686797bcdd3fd7ba267910c8bb66d60a96a"
     },
     "slideshow": {
       "source": "heygen-com/hyperframes",

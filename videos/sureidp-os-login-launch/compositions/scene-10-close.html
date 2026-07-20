@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #root {
+          position: absolute; inset: 0; background: #f5f8fb; overflow: hidden;
+          font-family: "Montserrat", sans-serif;
+        }
+        .glow {
+          position: absolute; top: 50%; left: 50%; width: 1500px; height: 1500px;
+          margin: -750px 0 0 -750px; border-radius: 50%;
+          background: radial-gradient(circle, rgba(0,119,255,0.10) 0%, rgba(0,119,255,0) 65%);
+          opacity: 0;
+        }
+        .lockup { position: absolute; top: 300px; left: 0; right: 0; text-align: center; }
+        .mark {
+          width: 96px; height: 96px; margin: 0 auto 28px;
+          opacity: 0; transform: scale(0.4);
+        }
+        .mark svg { width: 96px; height: 96px; }
+        .mark path { fill: none; stroke: #0077ff; stroke-width: 1.5; }
+        .wordmark {
+          font-size: 76px; font-weight: 800; letter-spacing: -0.02em; color: #12161c;
+          opacity: 0;
+        }
+        .wordmark .accent { color: #0062cc; }
+        .breadcrumb {
+          position: absolute; top: 540px; left: 0; right: 0; text-align: center;
+          font-family: "IBM Plex Mono", monospace; font-size: 22px; font-weight: 500;
+          letter-spacing: 0.05em; color: #5b6675; opacity: 0;
+        }
+        .breadcrumb .accent { color: #0062cc; }
+        .accentline {
+          position: absolute; top: 700px; left: 50%; width: 72px; height: 4px; margin-left: -36px;
+          background: #0077ff; border-radius: 2px; opacity: 0; transform: scaleX(0);
+        }
+        .ctaline {
+          position: absolute; top: 740px; left: 0; right: 0; text-align: center;
+          font-size: 44px; font-weight: 700; color: #12161c; opacity: 0;
+        }
+        .ctaline .accent { color: #0062cc; }
+      </style>
+      <div id="root" data-composition-id="scene-10-close" data-width="1920" data-height="1080" data-duration="15.9">
+        <div class="glow" id="glow" data-layout-allow-overflow="true"></div>
+        <div class="lockup">
+          <div class="mark" id="mark">
+            <svg viewBox="0 0 24 24"><path id="markpath" d="M12 2l8 3v6c0 5-4 8.5-8 9.5-4-1-8-4.5-8-9.5V5l8-3z" /></svg>
+          </div>
+          <div class="wordmark" id="wordmark">OS Login with <span class="accent">SureIdP</span></div>
+        </div>
+        <div class="breadcrumb" id="breadcrumb">SUREMDM CONSOLE &nbsp;&rsaquo;&nbsp; PROFILES &nbsp;&rsaquo;&nbsp; <span class="accent">OS LOGIN</span></div>
+        <div class="accentline" id="accent"></div>
+        <div class="ctaline" id="ctaline">One login. Every device. <span class="accent">On your terms.</span></div>
+      </div>
+      <script>
+        window.__timelines = window.__timelines || {};
+        var tl = gsap.timeline({ paused: true });
+
+        tl.fromTo("#glow", { opacity: 0 }, { opacity: 1, duration: 1.0, ease: "sine.out" }, 0.2);
+
+        // icon mark draws on then settles, wordmark assembles beside it
+        var markLen = 40; // approximate path length placeholder for deterministic dash draw
+        tl.set("#markpath", { strokeDasharray: 60, strokeDashoffset: 60 }, 0.3);
+        tl.fromTo("#mark", { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2)" }, 0.3);
+        tl.to("#markpath", { strokeDashoffset: 0, duration: 0.6, ease: "power2.out" }, 0.35);
+        tl.fromTo("#wordmark", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 0.75);
+
+        // breadcrumb + accent line
+        tl.fromTo("#breadcrumb", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 3.6);
+        tl.fromTo("#accent", { opacity: 1, scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power2.out" }, 4.0);
+
+        // final CTA line settles and holds
+        tl.fromTo("#ctaline", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 8.2);
+
+        // slow breathing glow through the hold
+        tl.to("#glow", { scale: 1.06, duration: 3.0, ease: "sine.inOut", repeat: 2, yoyo: true, transformOrigin: "50% 50%" }, 9.0);
+
+        window.__timelines["scene-10-close"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

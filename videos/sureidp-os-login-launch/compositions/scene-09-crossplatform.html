@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #root {
+          position: absolute; inset: 0; background: #f5f8fb; overflow: hidden;
+          font-family: "Montserrat", sans-serif;
+        }
+        .connector { position: absolute; inset: 0; pointer-events: none; }
+        .node {
+          position: absolute; width: 190px; height: 130px; margin: -65px 0 0 -95px;
+          border-radius: 16px; background: rgba(0,119,255,0.045);
+          border: 1.5px solid rgba(0,119,255,0.18);
+          display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+          opacity: 0; transform: scale(0.5);
+        }
+        .node svg { width: 40px; height: 40px; }
+        .node .label {
+          font-family: "IBM Plex Mono", monospace; font-size: 18px; font-weight: 600;
+          letter-spacing: 0.06em; color: #12161c;
+        }
+        .hub {
+          position: absolute; top: 540px; left: 960px; width: 190px; height: 190px;
+          margin: -95px 0 0 -95px; border-radius: 50%;
+          background: #0077ff; display: flex; align-items: center; justify-content: center;
+          opacity: 0; transform: scale(0.3);
+          box-shadow: 0 20px 50px rgba(0,119,255,0.35);
+        }
+        .hub svg { width: 84px; height: 84px; }
+        .caption {
+          position: absolute; bottom: 130px; left: 0; right: 0; text-align: center;
+          font-weight: 700; font-size: 42px; color: #12161c; opacity: 0;
+        }
+        .caption .accent { color: #0062cc; }
+      </style>
+      <div id="root" data-composition-id="scene-09-crossplatform" data-width="1920" data-height="1080" data-duration="14.8">
+        <svg class="connector" viewBox="0 0 1920 1080">
+          <line id="line-win" x1="960" y1="540" x2="960" y2="190" stroke="#0077ff" stroke-width="2" stroke-dasharray="4 4" opacity="0" />
+          <line id="line-mac" x1="960" y1="540" x2="1290" y2="660" stroke="#0077ff" stroke-width="2" stroke-dasharray="4 4" opacity="0" />
+          <line id="line-lin" x1="960" y1="540" x2="630" y2="660" stroke="#0077ff" stroke-width="2" stroke-dasharray="4 4" opacity="0" />
+        </svg>
+
+        <div class="node" id="node-win" style="top:190px;left:960px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#0077ff" stroke-width="1.6"><rect x="3" y="4" width="8" height="8"/><rect x="13" y="4" width="8" height="8"/><rect x="3" y="14" width="8" height="8"/><rect x="13" y="14" width="8" height="8"/></svg>
+          <div class="label">WINDOWS</div>
+        </div>
+        <div class="node" id="node-mac" style="top:660px;left:1290px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#0077ff" stroke-width="1.6"><rect x="3" y="5" width="18" height="12" rx="1.5"/><path d="M9 20h6M12 17v3"/></svg>
+          <div class="label">MACOS</div>
+        </div>
+        <div class="node" id="node-lin" style="top:660px;left:630px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#0077ff" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 9h.01M15 9h.01M8 15c1.5 1.3 6.5 1.3 8 0"/></svg>
+          <div class="label">LINUX</div>
+        </div>
+
+        <div class="hub" id="hub">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M12 2l8 3v6c0 5-4 8.5-8 9.5-4-1-8-4.5-8-9.5V5l8-3z"/><circle cx="12" cy="10" r="2.4" fill="#fff" stroke="none"/><path d="M12 12.4v3.4" stroke="#fff"/></svg>
+        </div>
+
+        <div class="caption" id="cap1">Same identity. Same rules. <span class="accent">Same console.</span></div>
+        <div class="caption" id="cap2">One policy that follows <span class="accent">the device</span>, not the OS.</div>
+      </div>
+      <script>
+        window.__timelines = window.__timelines || {};
+        var tl = gsap.timeline({ paused: true });
+
+        tl.fromTo("#node-win", { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2)" }, 0.3);
+        tl.fromTo("#node-mac", { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2)" }, 0.96);
+        tl.fromTo("#node-lin", { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2)" }, 1.46);
+
+        tl.fromTo("#hub", { opacity: 0, scale: 0.3 }, { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(2.2)" }, 1.96);
+        tl.to(["#line-win", "#line-mac", "#line-lin"], { opacity: 1, duration: 0.4, stagger: 0.1 }, 2.2);
+        tl.fromTo("#cap1", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.4 }, 2.6);
+        tl.to("#cap1", { opacity: 0, duration: 0.3 }, 5.1);
+
+        // gentle continuous orbit-adjacent breathing on the hub while it holds
+        tl.to("#hub", { scale: 1.05, duration: 2.2, ease: "sine.inOut", repeat: 3, yoyo: true, transformOrigin: "50% 50%" }, 5.3);
+
+        tl.fromTo("#cap2", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.4 }, 5.4);
+
+        window.__timelines["scene-09-crossplatform"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

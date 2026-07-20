@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #root {
+          position: absolute;
+          inset: 0;
+          background: #f5f8fb;
+          overflow: hidden;
+          font-family: "Montserrat", sans-serif;
+        }
+        .eyebrow {
+          position: absolute;
+          top: 64px; left: 0; right: 0;
+          text-align: center;
+          font-family: "IBM Plex Mono", monospace;
+          font-size: 22px; font-weight: 600; letter-spacing: 0.14em;
+          color: #0062cc;
+          opacity: 0;
+        }
+        .stage {
+          position: absolute; top: 130px; left: 272px; width: 1375px;
+        }
+        .shotcard {
+          width: 1375px; border-radius: 14px;
+          border: 1px solid rgba(0,119,255,0.18);
+          box-shadow: 0 26px 64px rgba(27,37,48,0.15);
+          overflow: hidden; background: #fff;
+          opacity: 0; transform: scale(0.96);
+        }
+        .shotcard img { display: block; width: 100%; height: auto; }
+        .focusring {
+          position: absolute; border: 3px solid #0077ff; border-radius: 10px;
+          opacity: 0; box-shadow: 0 0 0 6px rgba(0,119,255,0.14);
+        }
+        .caption {
+          position: absolute; bottom: 54px; left: 0; right: 0; text-align: center;
+          font-weight: 700; font-size: 38px; color: #12161c; opacity: 0;
+        }
+        .caption .accent { color: #0062cc; }
+        .cursor { position: absolute; width: 34px; height: 34px; top: -80px; left: -80px; z-index: 20; }
+        .cursor .outline, .cursor .fill { position: absolute; inset: 0;
+          clip-path: polygon(2px 1px, 2px 26px, 10px 20px, 15px 30px, 20px 27px, 15px 18px, 24px 18px); }
+        .cursor .outline { background: #1b2530; transform: scale(1.18); transform-origin: 4px 2px; }
+        .cursor .fill { background: #ffffff; }
+
+        .deniedwrap {
+          position: absolute; inset: 0; opacity: 0;
+        }
+        .deniedwrap img {
+          position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+        }
+        .timer60 {
+          position: absolute; top: 40px; left: 50%; transform: translateX(-50%) scale(0.5);
+          font-family: "IBM Plex Mono", monospace; font-weight: 700;
+          color: #fff; text-align: center; opacity: 0;
+          background: rgba(11,20,32,0.55);
+          border-radius: 20px;
+          padding: 18px 40px;
+        }
+        .timer60 .num { font-size: 100px; line-height: 1; display: block; }
+        .timer60 .unit { font-size: 22px; letter-spacing: 0.16em; opacity: 0.85; }
+        .finalcaption {
+          position: absolute; bottom: 90px; left: 0; right: 0; text-align: center;
+          font-weight: 800; font-size: 56px; color: #fff; opacity: 0;
+          text-shadow: 0 4px 24px rgba(0,0,0,0.35);
+        }
+      </style>
+      <div id="root" data-composition-id="scene-07-conditional" data-width="1920" data-height="1080" data-duration="26.3">
+        <div class="eyebrow" id="eyebrow">CONDITIONAL ACCESS</div>
+        <div class="stage" id="stage">
+          <div class="shotcard" id="card">
+            <img src="assets/screenshots/07-config-conditional-access-section.png" />
+          </div>
+        </div>
+
+        <div class="focusring" id="ring-location" style="width:230px;height:80px;top:703px;left:334px;"></div>
+        <div class="focusring" id="ring-wifi" style="width:230px;height:80px;top:703px;left:581px;"></div>
+        <div class="focusring" id="ring-ip" style="width:230px;height:80px;top:703px;left:828px;"></div>
+        <div class="focusring" id="ring-time" style="width:230px;height:80px;top:703px;left:1075px;"></div>
+        <div class="focusring" id="ring-compliance" style="width:230px;height:80px;top:703px;left:1322px;"></div>
+
+        <div class="cursor" id="cursor"><div class="outline"></div><div class="fill"></div></div>
+
+        <div class="caption" id="cap-intro">Security, not just sign-in.</div>
+        <div class="caption" id="cap-met">Login only happens when <span class="accent">every rule is met</span>.</div>
+
+        <div class="deniedwrap" id="denied">
+          <img src="assets/screenshots/11-access-denied-conditional-access.png" />
+          <div class="timer60" id="timer">
+            <span class="num" id="timernum">60</span>
+            <span class="unit">SECONDS TO LOGOUT</span>
+          </div>
+          <div class="finalcaption" id="cap-final">No exceptions.</div>
+        </div>
+      </div>
+      <script>
+        window.__timelines = window.__timelines || {};
+        var tl = gsap.timeline({ paused: true });
+
+        tl.fromTo("#eyebrow", { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 0.4 }, 0.2);
+        tl.fromTo("#card", { opacity: 0, scale: 0.96 }, { opacity: 1, scale: 1, duration: 0.6, ease: "power3.out" }, 0.3);
+        tl.fromTo("#cap-intro", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.4 }, 0.6);
+        tl.to("#cap-intro", { opacity: 0, duration: 0.3 }, 4.3);
+
+        // Cursor cycles the 5 rule tabs — one ring lights at a time
+        tl.fromTo("#cursor", { x: 0, y: 0, opacity: 0 }, { x: 432, y: 703, opacity: 1, duration: 0.6, ease: "power2.out" }, 4.4);
+        tl.fromTo("#ring-location", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 4.9);
+        tl.to("#ring-location", { opacity: 0, duration: 0.2 }, 6.2);
+
+        tl.to("#cursor", { x: 679, y: 703, duration: 0.35, ease: "power2.inOut" }, 6.3);
+        tl.fromTo("#ring-wifi", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 6.4);
+        tl.to("#ring-wifi", { opacity: 0, duration: 0.2 }, 7.81);
+
+        tl.to("#cursor", { x: 926, y: 703, duration: 0.35, ease: "power2.inOut" }, 7.91);
+        tl.fromTo("#ring-ip", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 8.0);
+        tl.to("#ring-ip", { opacity: 0, duration: 0.2 }, 9.42);
+
+        tl.to("#cursor", { x: 1173, y: 703, duration: 0.35, ease: "power2.inOut" }, 9.52);
+        tl.fromTo("#ring-time", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 9.61);
+        tl.to("#ring-time", { opacity: 0, duration: 0.2 }, 11.03);
+
+        tl.to("#cursor", { x: 1420, y: 703, duration: 0.35, ease: "power2.inOut" }, 11.13);
+        tl.fromTo("#ring-compliance", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 11.22);
+        tl.to("#cursor", { opacity: 0, duration: 0.3 }, 12.4);
+        tl.to("#ring-compliance", { opacity: 0, duration: 0.2 }, 12.64);
+
+        tl.fromTo("#cap-met", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.4 }, 12.84);
+        tl.to("#cap-met", { opacity: 0, duration: 0.25 }, 15.7);
+
+        // THE CUT — punch-zoom + blur out of the config card, hard-cut to the real Access Denied screen
+        tl.to("#stage", { scale: 1.15, filter: "blur(18px)", duration: 0.3, ease: "power3.in" }, 15.89);
+        tl.to("#eyebrow", { opacity: 0, duration: 0.15 }, 15.89);
+        tl.set("#stage", { opacity: 0 }, 16.19);
+        tl.fromTo("#denied", { opacity: 0 }, { opacity: 1, duration: 0.12 }, 16.19);
+
+        tl.fromTo("#timer", { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(1.8)" }, 16.4);
+        tl.to("#timer", { opacity: 0, duration: 0.3 }, 19.3);
+        tl.fromTo("#cap-final", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4 }, 20.9);
+
+        window.__timelines["scene-07-conditional"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

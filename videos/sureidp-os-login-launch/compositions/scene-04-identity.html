@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #root {
+          position: absolute;
+          inset: 0;
+          background: #f5f8fb;
+          overflow: hidden;
+          font-family: "Montserrat", sans-serif;
+        }
+        .eyebrow {
+          position: absolute;
+          top: 64px;
+          left: 0;
+          right: 0;
+          text-align: center;
+          font-family: "IBM Plex Mono", monospace;
+          font-size: 22px;
+          font-weight: 600;
+          letter-spacing: 0.14em;
+          color: #0062cc;
+          opacity: 0;
+        }
+        .stage {
+          position: absolute;
+          top: 130px;
+          left: 272px;
+          width: 1375px;
+        }
+        .shotcard {
+          width: 1375px;
+          border-radius: 14px;
+          border: 1px solid rgba(0,119,255,0.18);
+          box-shadow: 0 26px 64px rgba(27,37,48,0.15);
+          overflow: hidden;
+          background: #fff;
+          opacity: 0;
+          transform: scale(0.96);
+        }
+        .shotcard img { display: block; width: 100%; height: auto; }
+        .caption {
+          position: absolute;
+          bottom: 56px;
+          left: 0;
+          right: 0;
+          text-align: center;
+          font-weight: 700;
+          font-size: 42px;
+          color: #12161c;
+          opacity: 0;
+        }
+        .caption .accent { color: #0062cc; }
+        .focusring {
+          position: absolute;
+          border: 3px solid #0077ff;
+          border-radius: 10px;
+          opacity: 0;
+          box-shadow: 0 0 0 6px rgba(0,119,255,0.14);
+        }
+        .badge {
+          position: absolute;
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          background: #0077ff;
+          color: #fff;
+          font-size: 22px;
+          font-weight: 700;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          opacity: 0;
+          transform: scale(0.4);
+          box-shadow: 0 8px 20px rgba(0,119,255,0.35);
+        }
+        .cursor { position: absolute; width: 34px; height: 34px; top: -80px; left: -80px; z-index: 20; }
+        .cursor .outline, .cursor .fill {
+          position: absolute; inset: 0;
+          clip-path: polygon(2px 1px, 2px 26px, 10px 20px, 15px 30px, 20px 27px, 15px 18px, 24px 18px);
+        }
+        .cursor .outline { background: #1b2530; transform: scale(1.18); transform-origin: 4px 2px; }
+        .cursor .fill { background: #ffffff; }
+      </style>
+      <div id="root" data-composition-id="scene-04-identity" data-width="1920" data-height="1080" data-duration="29.3">
+        <div class="eyebrow" id="eyebrow">SUREIDP CONFIGURATION</div>
+        <div class="stage">
+          <div class="shotcard" id="card">
+            <img src="assets/screenshots/02-config-sureidp-section.png" />
+          </div>
+        </div>
+
+        <div class="focusring" id="ring-1" style="width:36px;height:36px;top:298px;left:934px;"></div>
+        <div class="badge" id="badge-1" style="top:296px;left:1044px;">&#10003;</div>
+
+        <div class="focusring" id="ring-2" style="width:220px;height:60px;top:373px;left:1132px;"></div>
+
+        <div class="focusring" id="ring-3" style="width:36px;height:36px;top:569px;left:934px;"></div>
+        <div class="badge" id="badge-3" style="top:567px;left:1044px;">&#10003;</div>
+
+        <div class="focusring" id="ring-4" style="width:36px;height:36px;top:656px;left:934px;"></div>
+        <div class="badge" id="badge-4" style="top:654px;left:1044px;">&#10003;</div>
+
+        <div class="cursor" id="cursor"><div class="outline"></div><div class="fill"></div></div>
+
+        <div class="caption" id="cap-1">Every sign-in routes through <span class="accent">SureIdP</span>.</div>
+        <div class="caption" id="cap-2">Offline credentials still work &mdash; until the expiry window closes.</div>
+        <div class="caption" id="cap-3">Existing local account? <span class="accent">Take it over</span>, matched by name.</div>
+        <div class="caption" id="cap-4">Bind the device to its person. <span class="accent">Only they</span> get in.</div>
+      </div>
+      <script>
+        window.__timelines = window.__timelines || {};
+        var tl = gsap.timeline({ paused: true });
+
+        tl.fromTo("#eyebrow", { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 0.4 }, 0.2);
+        tl.fromTo("#card", { opacity: 0, scale: 0.96 }, { opacity: 1, scale: 1, duration: 0.6, ease: "power3.out" }, 0.3);
+
+        // Beat 1 (0.3 - 3.94): enable SureIdP
+        tl.fromTo("#cursor", { x: 0, y: 0, opacity: 0 }, { x: 917, y: 279, opacity: 1, duration: 0.7, ease: "power2.out" }, 1.0);
+        tl.fromTo("#ring-1", { opacity: 0 }, { opacity: 1, duration: 0.25 }, 1.6);
+        tl.to("#cursor", { scale: 0.85, duration: 0.07 }, 1.95);
+        tl.to("#cursor", { scale: 1, duration: 0.15, ease: "back.out(2)" }, 2.02);
+        tl.fromTo("#badge-1", { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2.5)" }, 2.0);
+        tl.fromTo("#cap-1", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.35 }, 2.1);
+        tl.to("#cap-1", { opacity: 0, duration: 0.25 }, 3.7);
+        tl.to("#ring-1", { opacity: 0, duration: 0.25 }, 3.7);
+
+        // Beat 2 (3.94 - 10.76): offline expiry field
+        tl.to("#cursor", { x: 1245, y: 400, duration: 0.7, ease: "power2.inOut" }, 4.1);
+        tl.fromTo("#ring-2", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 4.8);
+        tl.fromTo("#cap-2", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.35 }, 5.0);
+        tl.to("#cap-2", { opacity: 0, duration: 0.25 }, 10.3);
+        tl.to("#ring-2", { opacity: 0, duration: 0.25 }, 10.3);
+
+        // Beat 3 (10.76 - 19.74): existing user takeover
+        tl.to("#cursor", { x: 917, y: 550, duration: 0.7, ease: "power2.inOut" }, 10.9);
+        tl.fromTo("#ring-3", { opacity: 0 }, { opacity: 1, duration: 0.25 }, 11.5);
+        tl.to("#cursor", { scale: 0.85, duration: 0.07 }, 11.8);
+        tl.to("#cursor", { scale: 1, duration: 0.15, ease: "back.out(2)" }, 11.88);
+        tl.fromTo("#badge-3", { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2.5)" }, 11.85);
+        tl.fromTo("#cap-3", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.35 }, 12.0);
+        tl.to("#cap-3", { opacity: 0, duration: 0.25 }, 19.2);
+        tl.to("#ring-3", { opacity: 0, duration: 0.25 }, 19.2);
+
+        // Beat 4 (19.74 - end): device-to-user binding
+        tl.to("#cursor", { x: 917, y: 637, duration: 0.6, ease: "power2.inOut" }, 19.9);
+        tl.fromTo("#ring-4", { opacity: 0 }, { opacity: 1, duration: 0.25 }, 20.4);
+        tl.to("#cursor", { scale: 0.85, duration: 0.07 }, 20.7);
+        tl.to("#cursor", { scale: 1, duration: 0.15, ease: "back.out(2)" }, 20.77);
+        tl.fromTo("#badge-4", { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2.5)" }, 20.75);
+        tl.fromTo("#cap-4", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.35 }, 20.9);
+
+        window.__timelines["scene-04-identity"] = tl;
+      </script>
+    </template>
+  </body>
+</html>
